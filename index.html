@@ -49,18 +49,32 @@
     padding: env(safe-area-inset-top, 16px) 16px env(safe-area-inset-bottom, 16px);
   }
 
-  /* ---------- 頂部列 ---------- */
+  /* ---------- 頂部導覽與清單切換 ---------- */
   .topbar {
     height: 52px;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 8px;
   }
-  .topbar-title {
-    font-size: 1.1rem;
+  .deck-selector-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.95rem;
     font-weight: 700;
-    letter-spacing: 0.5px;
     color: var(--text-main);
+    cursor: pointer;
+    max-width: 220px;
+  }
+  .deck-title-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .icon-btn {
     width: 44px;
@@ -75,9 +89,7 @@
     justify-content: center;
     cursor: pointer;
   }
-  .icon-btn:active {
-    background-color: var(--border);
-  }
+  .icon-btn:active { background-color: var(--border); }
 
   /* ---------- 主舞台卡片 ---------- */
   .stage {
@@ -171,6 +183,8 @@
     text-align: center;
     color: var(--text-muted);
     font-size: 0.95rem;
+    line-height: 1.6;
+    padding: 20px;
   }
 
   /* ---------- 底部導覽 ---------- */
@@ -192,10 +206,7 @@
     cursor: pointer;
   }
   .nav-btn:active { opacity: 0.85; }
-  .nav-btn[disabled] {
-    opacity: 0.3;
-    cursor: not-allowed;
-  }
+  .nav-btn[disabled] { opacity: 0.3; cursor: not-allowed; }
 
   /* ---------- 彈出面板 (Sheets) ---------- */
   .sheet-overlay {
@@ -207,9 +218,7 @@
     justify-content: center;
     z-index: 100;
   }
-  .sheet-overlay.active {
-    display: flex;
-  }
+  .sheet-overlay.active { display: flex; }
   .sheet {
     width: 100%;
     max-width: 480px;
@@ -238,6 +247,11 @@
     font-size: 1.1rem;
     font-weight: 700;
   }
+  .sheet-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
   .sheet-body {
     overflow-y: auto;
     flex: 1;
@@ -259,11 +273,11 @@
   input[type="text"],
   input[type="search"] {
     width: 100%;
-    height: 46px;
+    height: 44px;
     padding: 0 12px;
     border: 1px solid var(--border);
     border-radius: 10px;
-    font-size: 1rem;
+    font-size: 0.95rem;
     color: var(--text-main);
     background-color: var(--bg);
   }
@@ -287,10 +301,7 @@
     cursor: pointer;
     border: 1px solid transparent;
   }
-  .btn-primary {
-    background-color: var(--primary);
-    color: #FFFFFF;
-  }
+  .btn-primary { background-color: var(--primary); color: #FFFFFF; }
   .btn-primary:active { background-color: var(--primary-hover); }
   .btn-secondary {
     background-color: transparent;
@@ -311,16 +322,14 @@
     gap: 10px;
     margin-top: 8px;
   }
-  .sheet-actions .btn {
-    flex: 1;
-  }
+  .sheet-actions .btn { flex: 1; }
 
   /* 排序標籤 */
   .sort-bar {
     display: flex;
     gap: 6px;
     overflow-x: auto;
-    padding-bottom: 6px;
+    padding-bottom: 4px;
   }
   .chip {
     padding: 6px 12px;
@@ -339,7 +348,7 @@
     color: var(--primary);
   }
 
-  /* 單字清單項目 */
+  /* 單字列表與行內展開編輯 */
   .word-list {
     display: flex;
     flex-direction: column;
@@ -349,6 +358,11 @@
     background: var(--bg);
     border: 1px solid var(--border);
     border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .word-item-main {
     padding: 12px 14px;
     display: flex;
     align-items: center;
@@ -356,10 +370,7 @@
     gap: 12px;
     cursor: pointer;
   }
-  .word-item-info {
-    flex: 1;
-    min-width: 0;
-  }
+  .word-item-info { flex: 1; min-width: 0; }
   .word-item-word {
     font-weight: 600;
     font-size: 0.95rem;
@@ -380,10 +391,7 @@
     display: none;
     gap: 6px;
   }
-  /* 管理模式下顯示按鈕 */
-  .management-mode .word-item-ops {
-    display: flex;
-  }
+  .management-mode .word-item-ops { display: flex; }
   .btn-sm {
     padding: 6px 10px;
     border-radius: 6px;
@@ -398,19 +406,87 @@
     color: var(--danger);
     border-color: rgba(239, 68, 68, 0.3);
   }
+
+  /* 行內編輯區塊 */
+  .inline-edit-box {
+    display: none;
+    padding: 12px 14px;
+    background: #FFFFFF;
+    border-top: 1px dashed var(--border);
+    flex-direction: column;
+    gap: 8px;
+  }
+  .word-item.editing .inline-edit-box {
+    display: flex;
+  }
+  .inline-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .inline-actions .btn {
+    height: 38px;
+    font-size: 0.82rem;
+    padding: 0 12px;
+  }
+
+  /* 清單選擇抽屜 */
+  .deck-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .deck-item {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+  }
+  .deck-item.active {
+    border-color: var(--primary);
+    background: #EFF6FF;
+  }
+  .deck-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+  .deck-count {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+  .deck-ops {
+    display: none;
+    gap: 6px;
+  }
+  .deck-management-mode .deck-ops {
+    display: flex;
+  }
 </style>
 </head>
 <body>
 
 <div id="app">
+  <!-- 頂部列 -->
   <header class="topbar">
-    <button class="icon-btn" id="btnList" aria-label="單字列表">☰</button>
-    <div class="topbar-title">Flashcard</div>
-    <button class="icon-btn" id="btnAdd" aria-label="新增單字">＋</button>
+    <button class="icon-btn" id="btnOpenList" aria-label="單字列表">☰</button>
+    <button class="deck-selector-btn" id="btnOpenDecks">
+      <span class="deck-title-text" id="currentDeckTitle">請選擇清單</span>
+      <span>▾</span>
+    </button>
+    <button class="icon-btn" id="btnOpenAdd" aria-label="新增單字">＋</button>
   </header>
 
+  <!-- 卡片主區 -->
   <main class="stage">
-    <div class="card" id="mainCard">
+    <div class="card" id="mainCard" style="display: none;">
       <div class="card-meta">
         <span id="metaIndex">No. 000</span>
         <span id="metaTotal">/ 000</span>
@@ -426,53 +502,76 @@
         </div>
       </div>
     </div>
-    <div class="empty-state" id="emptyState" style="display: none;">
-      <p>目前單字庫是空的，點右上角「＋」開始新增！</p>
+
+    <div class="empty-state" id="emptyState">
+      <p id="emptyPromptText">尚未建立任何單字清單<br>點擊下方按鈕開始新增！</p>
+      <button class="btn btn-primary" id="btnCreateFirstDeck" style="margin-top: 14px;">＋ 建立第一份清單</button>
     </div>
   </main>
 
+  <!-- 底部切換按鈕 -->
   <footer class="bottom-nav">
-    <button class="nav-btn" id="btnPrev">← 上一個</button>
-    <button class="nav-btn" id="btnNext">下一個 →</button>
+    <button class="nav-btn" id="btnPrev" disabled>← 上一個</button>
+    <button class="nav-btn" id="btnNext" disabled>下一個 →</button>
   </footer>
 </div>
 
-<!-- 新增/編輯彈窗 -->
-<div class="sheet-overlay" id="formOverlay">
+<!-- 清單選擇與管理彈窗 -->
+<div class="sheet-overlay" id="deckOverlay">
   <div class="sheet">
     <div class="sheet-handle"></div>
     <div class="sheet-header">
-      <div class="sheet-title" id="formTitle">新增單字</div>
+      <div class="sheet-title">單字清單</div>
+      <div class="sheet-header-actions">
+        <button type="button" class="btn-text" id="btnNewDeck">＋ 新增</button>
+        <button type="button" class="btn-text" id="btnToggleDeckManage">管理清單</button>
+      </div>
     </div>
     <div class="sheet-body">
-      <label>原文單字 / 句子
-        <input type="text" id="inputWord" placeholder="輸入單字，系統將自動翻譯…">
-      </label>
-      <div class="status-text" id="translateStatus"></div>
-      <label>中文翻譯
-        <input type="text" id="inputTrans" placeholder="自動翻譯結果（可手動修改）">
-      </label>
-      <label>補充筆記（選填）
-        <input type="text" id="inputNote" placeholder="例句、詞性、用法筆記…">
-      </label>
+      <div class="deck-list" id="deckListContainer"></div>
     </div>
     <div class="sheet-actions">
-      <button type="button" class="btn btn-secondary" id="btnCancelForm">取消</button>
-      <button type="button" class="btn btn-primary" id="btnSaveForm">儲存</button>
+      <button type="button" class="btn btn-secondary" id="btnCloseDecks">關閉</button>
     </div>
   </div>
 </div>
 
-<!-- 單字列表彈窗 -->
+<!-- 新增單字彈窗 -->
+<div class="sheet-overlay" id="addWordOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <div class="sheet-title" id="addWordSheetTitle">新增單字</div>
+    </div>
+    <div class="sheet-body">
+      <label>原文單字 / 句子
+        <input type="text" id="inputNewWord" placeholder="輸入單字，系統將自動翻譯…">
+      </label>
+      <div class="status-text" id="addWordStatus"></div>
+      <label>中文翻譯
+        <input type="text" id="inputNewTrans" placeholder="自動翻譯結果（可手動修改）">
+      </label>
+      <label>補充筆記（選填）
+        <input type="text" id="inputNewNote" placeholder="例句、詞性、記憶筆記…">
+      </label>
+    </div>
+    <div class="sheet-actions">
+      <button type="button" class="btn btn-secondary" id="btnCancelAddWord">取消</button>
+      <button type="button" class="btn btn-primary" id="btnSaveNewWord">儲存單字</button>
+    </div>
+  </div>
+</div>
+
+<!-- 單字列表管理 (含行內無遮擋編輯) -->
 <div class="sheet-overlay" id="listOverlay">
   <div class="sheet">
     <div class="sheet-handle"></div>
     <div class="sheet-header">
-      <div class="sheet-title">單字列表</div>
-      <button type="button" class="btn-text" id="btnToggleManage">管理單字</button>
+      <div class="sheet-title" id="listSheetTitle">本課單字</div>
+      <button type="button" class="btn-text" id="btnToggleManage">管理 / 編輯</button>
     </div>
     <div class="sheet-body">
-      <input type="search" id="searchInput" placeholder="搜尋單字、翻譯或筆記…">
+      <input type="search" id="searchInput" placeholder="搜尋當前清單單字…">
       <div class="sort-bar">
         <button type="button" class="chip" data-sort="time_desc">最新</button>
         <button type="button" class="chip" data-sort="time_asc">最舊</button>
@@ -489,16 +588,21 @@
 
 <script>
 (function() {
-  const STORAGE_KEY = 'universal_flashcards_data_clean';
-  const SORT_KEY = 'universal_flashcards_sort';
+  const STORAGE_DECKS = 'app_decks_v2';
+  const STORAGE_WORDS = 'app_words_v2';
+  const STORAGE_ACTIVE_DECK = 'app_active_deck_v2';
+  const SORT_KEY = 'app_sort_v2';
 
+  let decks = [];
   let words = [];
+  let activeDeckId = null;
   let sortMode = localStorage.getItem(SORT_KEY) || 'time_desc';
   let randomOrder = [];
   let currentWordId = null;
   let isRevealed = false;
-  let editingId = null;
   let isManageMode = false;
+  let isDeckManageMode = false;
+  let editingWordId = null;
   let debounceTimer = null;
 
   const $ = (id) => document.getElementById(id);
@@ -509,27 +613,40 @@
 
   function loadData() {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      words = raw ? JSON.parse(raw) : [];
+      decks = JSON.parse(localStorage.getItem(STORAGE_DECKS)) || [];
+      words = JSON.parse(localStorage.getItem(STORAGE_WORDS)) || [];
+      activeDeckId = localStorage.getItem(STORAGE_ACTIVE_DECK) || (decks[0] ? decks[0].id : null);
     } catch (e) {
+      decks = [];
       words = [];
+      activeDeckId = null;
     }
   }
 
   function saveData() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(words));
+    localStorage.setItem(STORAGE_DECKS, JSON.stringify(decks));
+    localStorage.setItem(STORAGE_WORDS, JSON.stringify(words));
+    if (activeDeckId) localStorage.setItem(STORAGE_ACTIVE_DECK, activeDeckId);
+    else localStorage.removeItem(STORAGE_ACTIVE_DECK);
+  }
+
+  /* ---------- 清單過濾與排序 ---------- */
+  function getActiveWords() {
+    if (!activeDeckId) return [];
+    return words.filter(w => w.deckId === activeDeckId);
   }
 
   function shuffleRandomOrder() {
-    randomOrder = words.map(w => w.id);
+    const list = getActiveWords();
+    randomOrder = list.map(w => w.id);
     for (let i = randomOrder.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [randomOrder[i], randomOrder[j]] = [randomOrder[j], randomOrder[i]];
     }
   }
 
-  function getSortedWords() {
-    const list = words.slice();
+  function getSortedActiveWords() {
+    const list = getActiveWords().slice();
     if (sortMode === 'time_desc') {
       list.sort((a, b) => b.createdAt - a.createdAt);
     } else if (sortMode === 'time_asc') {
@@ -559,17 +676,36 @@
     });
   }
 
+  /* ---------- 主舞台刷卡渲染 ---------- */
   function renderCard() {
-    const list = getSortedWords();
+    const currentDeck = decks.find(d => d.id === activeDeckId);
+    $('currentDeckTitle').textContent = currentDeck ? currentDeck.name : '尚未選取清單';
+
+    const list = getSortedActiveWords();
     const total = list.length;
     const cardEl = $('mainCard');
     const emptyEl = $('emptyState');
+    const promptText = $('emptyPromptText');
+    const createBtn = $('btnCreateFirstDeck');
     const prevBtn = $('btnPrev');
     const nextBtn = $('btnNext');
+
+    if (!currentDeck) {
+      cardEl.style.display = 'none';
+      emptyEl.style.display = 'block';
+      promptText.innerHTML = '尚未建立任何單字清單<br>點擊下方按鈕開始新增！';
+      createBtn.style.display = 'inline-block';
+      prevBtn.disabled = true;
+      nextBtn.disabled = true;
+      currentWordId = null;
+      return;
+    }
 
     if (total === 0) {
       cardEl.style.display = 'none';
       emptyEl.style.display = 'block';
+      promptText.innerHTML = `「${currentDeck.name}」目前沒有單字<br>點右上角「＋」開始新增！`;
+      createBtn.style.display = 'none';
       prevBtn.disabled = true;
       nextBtn.disabled = true;
       currentWordId = null;
@@ -611,7 +747,7 @@
   }
 
   function stepCard(delta) {
-    const list = getSortedWords();
+    const list = getSortedActiveWords();
     if (list.length === 0) return;
     let idx = list.findIndex(w => w.id === currentWordId);
     if (idx === -1) idx = 0;
@@ -620,116 +756,208 @@
     renderCard();
   }
 
-  /* ---------- 自動翻譯流程 (Debounced) ---------- */
-  async function triggerAutoTranslate() {
-    const word = $('inputWord').value.trim();
+  /* ---------- 自動翻譯 API ---------- */
+  async function autoTranslateWord(text, targetInputId, statusId) {
+    const word = text.trim();
     if (!word) {
-      $('translateStatus').textContent = '';
+      $(statusId).textContent = '';
       return;
     }
-    $('translateStatus').textContent = '自動翻譯中…';
-
+    $(statusId).textContent = '自動翻譯中…';
     try {
       const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(word)}&langpair=Autodetect|zh-TW`);
       const data = await res.json();
       if (data && data.responseData && data.responseData.translatedText) {
-        $('inputTrans').value = data.responseData.translatedText;
-        $('translateStatus').textContent = '已自動填入翻譯，可點擊修改';
+        $(targetInputId).value = data.responseData.translatedText;
+        $(statusId).textContent = '已填入建議翻譯，可自由修改';
       } else {
-        $('translateStatus').textContent = '未能取得翻譯，可手動輸入';
+        $(statusId).textContent = '無翻譯結果，請手動輸入';
       }
     } catch (e) {
-      $('translateStatus').textContent = '無法連線翻譯，可直接手動輸入';
+      $(statusId).textContent = '連線失敗，請直接手動輸入';
     }
   }
 
-  function onWordInput() {
-    if (editingId) return; // 編輯舊單字時不自動覆寫翻譯
-    clearTimeout(debounceTimer);
-    $('translateStatus').textContent = '輸入中…';
-    debounceTimer = setTimeout(triggerAutoTranslate, 500);
+  /* ---------- 清單管理作業 ---------- */
+  function openDeckModal() {
+    isDeckManageMode = false;
+    updateDeckManageBtnText();
+    $('deckOverlay').classList.add('active');
+    renderDeckList();
+  }
+  function closeDeckModal() {
+    $('deckOverlay').classList.remove('active');
   }
 
-  /* ---------- 表單流程 ---------- */
-  function openForm(targetId = null) {
-    editingId = targetId;
-    $('translateStatus').textContent = '';
-    
-    if (editingId) {
-      const target = words.find(w => w.id === editingId);
-      if (!target) return;
-      $('formTitle').textContent = '編輯單字';
-      $('inputWord').value = target.word;
-      $('inputTrans').value = target.trans;
-      $('inputNote').value = target.note;
-    } else {
-      $('formTitle').textContent = '新增單字';
-      $('inputWord').value = '';
-      $('inputTrans').value = '';
-      $('inputNote').value = '';
-    }
-
-    $('formOverlay').classList.add('active');
-    setTimeout(() => $('inputWord').focus(), 100);
+  function toggleDeckManageMode() {
+    isDeckManageMode = !isDeckManageMode;
+    updateDeckManageBtnText();
+    renderDeckList();
   }
 
-  function closeForm() {
-    $('formOverlay').classList.remove('active');
-    editingId = null;
+  function updateDeckManageBtnText() {
+    $('btnToggleDeckManage').textContent = isDeckManageMode ? '完成' : '管理清單';
   }
 
-  function saveForm() {
-    const word = $('inputWord').value.trim();
-    const trans = $('inputTrans').value.trim();
-    const note = $('inputNote').value.trim();
+  function renderDeckList() {
+    const container = $('deckListContainer');
+    container.innerHTML = '';
+    container.className = isDeckManageMode ? 'deck-list deck-management-mode' : 'deck-list';
 
-    if (!word) {
-      $('translateStatus').textContent = '請填寫原文單字';
+    if (decks.length === 0) {
+      container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:20px;">尚無清單，請點右上角「＋ 新增」</div>';
       return;
     }
 
-    if (editingId) {
-      const target = words.find(w => w.id === editingId);
-      if (target) {
-        target.word = word;
-        target.trans = trans;
-        target.note = note;
-      }
-    } else {
-      const newWord = {
-        id: createId(),
-        word,
-        trans,
-        note,
-        createdAt: Date.now()
+    decks.forEach(d => {
+      const count = words.filter(w => w.deckId === d.id).length;
+      const item = document.createElement('div');
+      item.className = 'deck-item' + (d.id === activeDeckId ? ' active' : '');
+
+      const info = document.createElement('div');
+      info.className = 'deck-info';
+      info.innerHTML = `<span>${d.name}</span><span class="deck-count">(${count})</span>`;
+
+      const ops = document.createElement('div');
+      ops.className = 'deck-ops';
+
+      const renameBtn = document.createElement('button');
+      renameBtn.className = 'btn-sm';
+      renameBtn.textContent = '改名';
+      renameBtn.type = 'button';
+      renameBtn.onclick = (e) => {
+        e.stopPropagation();
+        const newName = prompt('請輸入新的清單名稱：', d.name);
+        if (newName && newName.trim()) {
+          d.name = newName.trim();
+          saveData();
+          renderDeckList();
+          renderCard();
+        }
       };
-      words.push(newWord);
-      if (sortMode === 'random') randomOrder.push(newWord.id);
-      currentWordId = newWord.id;
+
+      const delBtn = document.createElement('button');
+      delBtn.className = 'btn-sm del';
+      delBtn.textContent = '刪除';
+      delBtn.type = 'button';
+      delBtn.onclick = (e) => {
+        e.stopPropagation();
+        if (confirm(`確定刪除「${d.name}」及其包含的全部單字嗎？`)) {
+          decks = decks.filter(x => x.id !== d.id);
+          words = words.filter(w => w.deckId !== d.id);
+          if (activeDeckId === d.id) {
+            activeDeckId = decks[0] ? decks[0].id : null;
+          }
+          saveData();
+          renderDeckList();
+          renderCard();
+        }
+      };
+
+      ops.appendChild(renameBtn);
+      ops.appendChild(delBtn);
+
+      item.appendChild(info);
+      item.appendChild(ops);
+
+      item.onclick = () => {
+        if (!isDeckManageMode) {
+          activeDeckId = d.id;
+          saveData();
+          renderCard();
+          closeDeckModal();
+        }
+      };
+
+      container.appendChild(item);
+    });
+  }
+
+  function handleCreateDeck() {
+    const name = prompt('請輸入新清單名稱（例如：第一課、日常生活）：');
+    if (name && name.trim()) {
+      const newDeck = { id: createId(), name: name.trim() };
+      decks.push(newDeck);
+      activeDeckId = newDeck.id;
+      saveData();
+      renderCard();
+      renderDeckList();
+    }
+  }
+
+  /* ---------- 新增單字流程 ---------- */
+  function openAddWordModal() {
+    if (!activeDeckId) {
+      handleCreateDeck();
+      if (!activeDeckId) return;
+    }
+    const currentDeck = decks.find(d => d.id === activeDeckId);
+    $('addWordSheetTitle').textContent = `新增單字至「${currentDeck.name}」`;
+    $('inputNewWord').value = '';
+    $('inputNewTrans').value = '';
+    $('inputNewNote').value = '';
+    $('addWordStatus').textContent = '';
+    $('addWordOverlay').classList.add('active');
+    setTimeout(() => {
+      $('inputNewWord').focus();
+      $('inputNewWord').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 150);
+  }
+
+  function closeAddWordModal() {
+    $('addWordOverlay').classList.remove('active');
+  }
+
+  function saveNewWord() {
+    const word = $('inputNewWord').value.trim();
+    const trans = $('inputNewTrans').value.trim();
+    const note = $('inputNewNote').value.trim();
+
+    if (!word) {
+      $('addWordStatus').textContent = '請輸入原文單字';
+      return;
     }
 
+    const newWord = {
+      id: createId(),
+      deckId: activeDeckId,
+      word,
+      trans,
+      note,
+      createdAt: Date.now()
+    };
+    words.push(newWord);
+    if (sortMode === 'random') randomOrder.push(newWord.id);
+    currentWordId = newWord.id;
+
     saveData();
-    closeForm();
+    closeAddWordModal();
     renderCard();
     renderList();
   }
 
-  /* ---------- 清單與管理模式 ---------- */
-  function openList() {
+  /* ---------- 單字清單與行內無遮擋編輯 ---------- */
+  function openListModal() {
+    if (!activeDeckId) return;
     isManageMode = false;
+    editingWordId = null;
     updateManageBtnText();
+    const currentDeck = decks.find(d => d.id === activeDeckId);
+    $('listSheetTitle').textContent = `${currentDeck ? currentDeck.name : ''} 單字`;
     $('listOverlay').classList.add('active');
     $('searchInput').value = '';
     updateSortChips();
     renderList();
   }
 
-  function closeList() {
+  function closeListModal() {
     $('listOverlay').classList.remove('active');
+    editingWordId = null;
   }
 
   function toggleManageMode() {
     isManageMode = !isManageMode;
+    editingWordId = null;
     updateManageBtnText();
     renderList();
   }
@@ -740,7 +968,7 @@
 
   function renderList() {
     const query = $('searchInput').value.trim().toLowerCase();
-    const list = getSortedWords().filter(w => {
+    const list = getSortedActiveWords().filter(w => {
       if (!query) return true;
       return w.word.toLowerCase().includes(query) ||
              (w.trans && w.trans.toLowerCase().includes(query)) ||
@@ -757,39 +985,33 @@
       empty.style.color = 'var(--text-muted)';
       empty.style.fontSize = '0.85rem';
       empty.style.padding = '20px 0';
-      empty.textContent = '查無符合單字';
+      empty.textContent = '此清單查無單字';
       container.appendChild(empty);
       return;
     }
 
     list.forEach(w => {
       const item = document.createElement('div');
-      item.className = 'word-item';
-      
+      item.className = 'word-item' + (editingWordId === w.id ? ' editing' : '');
+
+      const main = document.createElement('div');
+      main.className = 'word-item-main';
+
       const info = document.createElement('div');
       info.className = 'word-item-info';
-      
-      const wordDiv = document.createElement('div');
-      wordDiv.className = 'word-item-word';
-      wordDiv.textContent = w.word;
-      
-      const transDiv = document.createElement('div');
-      transDiv.className = 'word-item-trans';
-      transDiv.textContent = w.trans || '(無翻譯)';
-      
-      info.appendChild(wordDiv);
-      info.appendChild(transDiv);
+      info.innerHTML = `<div class="word-item-word">${w.word}</div><div class="word-item-trans">${w.trans || '(無翻譯)'}</div>`;
 
       const ops = document.createElement('div');
       ops.className = 'word-item-ops';
 
       const editBtn = document.createElement('button');
       editBtn.className = 'btn-sm';
-      editBtn.textContent = '編輯';
+      editBtn.textContent = editingWordId === w.id ? '收合' : '編輯';
       editBtn.type = 'button';
       editBtn.onclick = (e) => {
         e.stopPropagation();
-        openForm(w.id);
+        editingWordId = (editingWordId === w.id) ? null : w.id;
+        renderList();
       };
 
       const delBtn = document.createElement('button');
@@ -798,7 +1020,7 @@
       delBtn.type = 'button';
       delBtn.onclick = (e) => {
         e.stopPropagation();
-        if (confirm(`確定要刪除「${w.word}」嗎？`)) {
+        if (confirm(`確定刪除「${w.word}」嗎？`)) {
           words = words.filter(x => x.id !== w.id);
           saveData();
           if (currentWordId === w.id) currentWordId = null;
@@ -810,23 +1032,63 @@
       ops.appendChild(editBtn);
       ops.appendChild(delBtn);
 
-      item.appendChild(info);
-      item.appendChild(ops);
+      main.appendChild(info);
+      main.appendChild(ops);
 
-      // 非管理模式下點擊單字可直接跳轉複習
-      item.onclick = () => {
+      main.onclick = () => {
         if (!isManageMode) {
           currentWordId = w.id;
           renderCard();
-          closeList();
+          closeListModal();
         }
       };
 
+      // 行內展開編輯區塊
+      const editBox = document.createElement('div');
+      editBox.className = 'inline-edit-box';
+      editBox.innerHTML = `
+        <label>原文<input type="text" class="inline-input-word" value="${w.word}"></label>
+        <div class="status-text inline-status"></div>
+        <label>翻譯<input type="text" class="inline-input-trans" value="${w.trans}"></label>
+        <label>筆記<input type="text" class="inline-input-note" value="${w.note || ''}"></label>
+        <div class="inline-actions">
+          <button type="button" class="btn btn-secondary inline-cancel-btn">取消</button>
+          <button type="button" class="btn btn-primary inline-save-btn">儲存修改</button>
+        </div>
+      `;
+
+      const inWord = editBox.querySelector('.inline-input-word');
+      const inTrans = editBox.querySelector('.inline-input-trans');
+      const inNote = editBox.querySelector('.inline-input-note');
+      const inStatus = editBox.querySelector('.inline-status');
+
+      editBox.querySelector('.inline-cancel-btn').onclick = () => {
+        editingWordId = null;
+        renderList();
+      };
+
+      editBox.querySelector('.inline-save-btn').onclick = () => {
+        const wordVal = inWord.value.trim();
+        if (!wordVal) {
+          inStatus.textContent = '原文不能為空';
+          return;
+        }
+        w.word = wordVal;
+        w.trans = inTrans.value.trim();
+        w.note = inNote.value.trim();
+        saveData();
+        editingWordId = null;
+        renderList();
+        renderCard();
+      };
+
+      item.appendChild(main);
+      item.appendChild(editBox);
       container.appendChild(item);
     });
   }
 
-  /* ---------- 觸控滑動 ---------- */
+  /* ---------- 手勢滑動支援 ---------- */
   function initSwipe() {
     const card = $('mainCard');
     let startX = 0, startY = 0, tracking = false;
@@ -851,34 +1113,47 @@
     }, { passive: true });
   }
 
-  /* ---------- 事件監聽 ---------- */
+  /* ---------- 事件監聽設定 ---------- */
   function initEvents() {
     $('btnPrev').onclick = () => stepCard(-1);
     $('btnNext').onclick = () => stepCard(1);
     $('transZone').onclick = toggleReveal;
 
-    $('btnAdd').onclick = () => openForm();
-    $('btnCancelForm').onclick = closeForm;
-    $('btnSaveForm').onclick = saveForm;
-    $('inputWord').oninput = onWordInput;
-    $('formOverlay').onclick = (e) => {
-      if (e.target === $('formOverlay')) closeForm();
+    // 清單面板控制
+    $('btnOpenDecks').onclick = openDeckModal;
+    $('btnCloseDecks').onclick = closeDeckModal;
+    $('btnNewDeck').onclick = handleCreateDeck;
+    $('btnCreateFirstDeck').onclick = handleCreateDeck;
+    $('btnToggleDeckManage').onclick = toggleDeckManageMode;
+    $('deckOverlay').onclick = (e) => { if (e.target === $('deckOverlay')) closeDeckModal(); };
+
+    // 新增單字
+    $('btnOpenAdd').onclick = openAddWordModal;
+    $('btnCancelAddWord').onclick = closeAddWordModal;
+    $('btnSaveNewWord').onclick = saveNewWord;
+    $('addWordOverlay').onclick = (e) => { if (e.target === $('addWordOverlay')) closeAddWordModal(); };
+    $('inputNewWord').oninput = () => {
+      clearTimeout(debounceTimer);
+      $('addWordStatus').textContent = '輸入中…';
+      debounceTimer = setTimeout(() => {
+        autoTranslateWord($('inputNewWord').value, 'inputNewTrans', 'addWordStatus');
+      }, 500);
     };
 
-    $('btnList').onclick = openList;
-    $('btnCloseList').onclick = closeList;
+    // 單字清單
+    $('btnOpenList').onclick = openListModal;
+    $('btnCloseList').onclick = closeListModal;
     $('btnToggleManage').onclick = toggleManageMode;
     $('searchInput').oninput = renderList;
-    $('listOverlay').onclick = (e) => {
-      if (e.target === $('listOverlay')) closeList();
-    };
+    $('listOverlay').onclick = (e) => { if (e.target === $('listOverlay')) closeListModal(); };
 
+    // 排序標籤
     document.querySelectorAll('.chip[data-sort]').forEach(chip => {
       chip.onclick = () => setSort(chip.dataset.sort);
     });
   }
 
-  // 初始化
+  // 啟動初始化
   loadData();
   if (sortMode === 'random') shuffleRandomOrder();
   initEvents();
