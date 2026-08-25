@@ -5,6 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
 <meta name="theme-color" content="#1E293B">
 <title>Language Flashcard</title>
+
+<!-- PWA 設定與 iOS 支援 -->
+<link rel="manifest" href="./manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="單字卡">
+<link rel="apple-touch-icon" href="./icon.png">
+
 <style>
   :root {
     --bg: #F8FAFC;
@@ -1153,6 +1161,17 @@
     });
   }
 
+  // PWA Service Worker 註冊
+  function registerServiceWorker() {
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then((reg) => console.log('PWA ServiceWorker 註冊成功:', reg.scope))
+          .catch((err) => console.log('PWA ServiceWorker 註冊失敗:', err));
+      });
+    }
+  }
+
   // 啟動初始化
   loadData();
   if (sortMode === 'random') shuffleRandomOrder();
@@ -1160,6 +1179,7 @@
   initSwipe();
   updateSortChips();
   renderCard();
+  registerServiceWorker();
 })();
 </script>
 </body>
