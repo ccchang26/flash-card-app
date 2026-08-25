@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="theme-color" content="#F1EDE3">
+<title>日文單字卡</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F1EDE3;
+    --paper-2:#E7E1CF;
+    --ink:#221F1B;
+    --ink-soft:#6B6558;
+    --indigo:#2C3A55;
+    --indigo-2:#3C4E6E;
+    --seal:#B23A2E;
+    --seal-ghost:#B23A2E33;
+    --line:#D9D0B8;
+    --danger:#A6392E;
+    --radius:18px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Noto Sans TC',sans-serif;
+    overscroll-behavior:none;
+    display:flex;
+    justify-content:center;
+  }
+  #app{
+    width:100%;
+    max-width:480px;
+    min-height:100vh;
+    min-height:100dvh;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+  }
+
+  /* ---------- Topbar ---------- */
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:14px 16px calc(10px + env(safe-area-inset-top,0px));
+    padding-top:calc(14px + env(safe-area-inset-top,0px));
+  }
+  .brand{
+    font-family:'Shippori Mincho',serif;
+    font-weight:700;
+    font-size:1.05rem;
+    letter-spacing:.08em;
+    color:var(--indigo);
+  }
+  .icon-btn{
+    width:42px;height:42px;
+    border:none;
+    background:transparent;
+    color:var(--indigo);
+    font-size:1.3rem;
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .icon-btn:active{background:var(--paper-2);}
+
+  /* ---------- Stage / Card ---------- */
+  .stage{
+    flex:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:8px 20px 12px;
+  }
+  .card{
+    width:100%;
+    background:#FBF9F2;
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    box-shadow:0 1px 0 var(--line), 0 8px 24px -18px rgba(34,31,27,.5);
+    padding:18px 20px 22px;
+    display:flex;
+    flex-direction:column;
+    min-height:56vh;
+  }
+  .card-meta{
+    display:flex;
+    justify-content:space-between;
+    font-size:.72rem;
+    letter-spacing:.08em;
+    color:var(--ink-soft);
+    font-variant-numeric:tabular-nums;
+    padding-bottom:10px;
+    border-bottom:1px dashed var(--line);
+  }
+  .jp-zone{
+    flex:1.1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:18px 4px;
+  }
+  .jp-word{
+    font-family:'Shippori Mincho',serif;
+    font-weight:700;
+    font-size:clamp(2.1rem, 9vw, 3rem);
+    line-height:1.3;
+    word-break:break-word;
+    color:var(--ink);
+  }
+  .zh-zone{
+    flex:1;
+    position:relative;
+    background:var(--paper-2);
+    border-radius:14px;
+    padding:20px 18px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    min-height:110px;
+    cursor:pointer;
+  }
+  .seal{
+    position:absolute;
+    top:-16px; right:14px;
+    width:52px;height:52px;
+    border-radius:50%;
+    border:2px solid var(--seal);
+    background:var(--seal);
+    color:#F6EDE6;
+    font-family:'Shippori Mincho',serif;
+    font-weight:700;
+    font-size:1.15rem;
+    transform:rotate(-8deg);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .seal.used{
+    background:transparent;
+    color:var(--seal);
+  }
+  .zh-content{width:100%;}
+  .zh-content.blurred .zh-text,
+  .zh-content.blurred .zh-note{
+    filter:blur(7px);
+    opacity:.55;
+    user-select:none;
+  }
+  .zh-text{
+    font-size:1.3rem;
+    font-weight:500;
+    color:var(--ink);
+  }
+  .zh-note{
+    margin-top:6px;
+    font-size:.85rem;
+    color:var(--ink-soft);
+  }
+  .zh-hint{
+    position:absolute;
+    bottom:10px; left:0; right:0;
+    text-align:center;
+    font-size:.72rem;
+    letter-spacing:.1em;
+    color:var(--ink-soft);
+  }
+  .empty-state{
+    text-align:center;
+    color:var(--ink-soft);
+    font-size:.95rem;
+    padding:0 20px;
+  }
+
+  /* ---------- Bottom Nav ---------- */
+  .bottom-nav{
+    display:flex;
+    gap:10px;
+    padding:10px 16px calc(14px + env(safe-area-inset-bottom,0px));
+  }
+  .nav-btn{
+    flex:1;
+    height:54px;
+    border:1px solid var(--indigo);
+    background:var(--indigo);
+    color:#F6F3EA;
+    font-family:'Noto Sans TC',sans-serif;
+    font-size:1rem;
+    font-weight:500;
+    border-radius:14px;
+  }
+  .nav-btn:active{background:var(--indigo-2);}
+  .nav-btn[disabled]{opacity:.35;pointer-events:none;}
+
+  /* ---------- Sheets ---------- */
+  .sheet-overlay{
+    position:fixed;inset:0;
+    background:rgba(34,31,27,.45);
+    display:flex;
+    align-items:flex-end;
+    justify-content:center;
+    z-index:50;
+  }
+  .sheet{
+    width:100%;
+    max-width:480px;
+    max-height:88vh;
+    overflow-y:auto;
+    background:var(--paper);
+    border-radius:22px 22px 0 0;
+    padding:10px 20px calc(20px + env(safe-area-inset-bottom,0px));
+    border-top:1px solid var(--line);
+  }
+  .sheet-tall{max-height:92vh;}
+  .sheet-handle{
+    width:40px;height:4px;
+    background:var(--line);
+    border-radius:2px;
+    margin:6px auto 14px;
+  }
+  .sheet h2{
+    font-family:'Shippori Mincho',serif;
+    font-size:1.1rem;
+    margin:0 0 14px;
+    color:var(--indigo);
+  }
+  .sheet label{
+    display:block;
+    font-size:.82rem;
+    color:var(--ink-soft);
+    margin-bottom:14px;
+  }
+  .sheet input[type=text],
+  .sheet input[type=search]{
+    width:100%;
+    margin-top:6px;
+    padding:12px 12px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    background:#FBF9F2;
+    font-size:1rem;
+    color:var(--ink);
+    font-family:'Noto Sans TC',sans-serif;
+  }
+  .input-row{display:flex;gap:8px;}
+  .input-row input{flex:1;}
+  .btn-secondary{
+    padding:0 16px;
+    border:1px solid var(--indigo);
+    background:transparent;
+    color:var(--indigo);
+    border-radius:10px;
+    font-size:.9rem;
+    font-family:'Noto Sans TC',sans-serif;
+  }
+  .btn-secondary:active{background:var(--paper-2);}
+  .hint-text{
+    font-size:.78rem;
+    color:var(--ink-soft);
+    min-height:1.1em;
+    margin-top:-8px;
+    margin-bottom:10px;
+  }
+  .sheet-actions{
+    display:flex;
+    gap:10px;
+    margin-top:6px;
+  }
+  .btn-ghost,.btn-primary{
+    flex:1;
+    height:48px;
+    border-radius:12px;
+    font-size:.95rem;
+    font-family:'Noto Sans TC',sans-serif;
+    font-weight:500;
+  }
+  .btn-ghost{
+    border:1px solid var(--line);
+    background:transparent;
+    color:var(--ink);
+  }
+  .btn-ghost:active{background:var(--paper-2);}
+  .btn-primary{
+    border:1px solid var(--seal);
+    background:var(--seal);
+    color:#F6EDE6;
+  }
+  .btn-primary:active{background:#953026;}
+  .btn-primary.full{width:100%;margin-top:16px;}
+
+  .search-input{margin-bottom:12px;}
+  .sort-row{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-bottom:14px;
+  }
+  .chip{
+    padding:8px 12px;
+    border-radius:999px;
+    border:1px solid var(--line);
+    background:transparent;
+    color:var(--ink-soft);
+    font-size:.8rem;
+    font-family:'Noto Sans TC',sans-serif;
+  }
+  .chip.active{
+    border-color:var(--seal);
+    color:var(--seal);
+    background:var(--seal-ghost);
+  }
+  .word-list{
+    display:flex;
+    flex-direction:column;
+    gap:1px;
+    background:var(--line);
+    border-radius:10px;
+    overflow:hidden;
+    margin-bottom:16px;
+  }
+  .word-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    background:#FBF9F2;
+    padding:12px 14px;
+  }
+  .word-row-text{min-width:0;}
+  .word-row-jp{
+    font-family:'Shippori Mincho',serif;
+    font-size:1rem;
+    color:var(--ink);
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .word-row-zh{
+    font-size:.8rem;
+    color:var(--ink-soft);
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .word-row-del{
+    flex-shrink:0;
+    border:1px solid var(--danger);
+    background:transparent;
+    color:var(--danger);
+    font-size:.75rem;
+    padding:7px 10px;
+    border-radius:8px;
+  }
+  .word-row-del:active{background:#A6392E22;}
+  .io-row{margin-bottom:0;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header class="topbar">
+    <button id="btnList" class="icon-btn" aria-label="單字列表">☰</button>
+    <div class="brand">日文單字卡</div>
+    <button id="btnAdd" class="icon-btn" aria-label="新增單字">＋</button>
+  </header>
+
+  <main class="stage">
+    <div class="card" id="card">
+      <div class="card-meta">
+        <span id="cardIndex">No. 000</span>
+        <span id="cardTotal">/ 000</span>
+      </div>
+      <div class="jp-zone">
+        <div class="jp-word" id="jpWord">—</div>
+      </div>
+      <div class="zh-zone" id="zhZone">
+        <button class="seal" id="sealBtn" aria-label="顯示或隱藏翻譯">訳</button>
+        <div class="zh-content blurred" id="zhContent">
+          <div class="zh-text" id="zhText">—</div>
+          <div class="zh-note" id="zhNote"></div>
+        </div>
+        <div class="zh-hint" id="zhHint">點按查看翻譯</div>
+      </div>
+    </div>
+    <div class="empty-state" id="emptyState" hidden>
+      <p>還沒有單字，點右上角「＋」新增第一個吧。</p>
+    </div>
+  </main>
+
+  <nav class="bottom-nav">
+    <button id="btnPrev" class="nav-btn">← 上一個</button>
+    <button id="btnNext" class="nav-btn">下一個 →</button>
+  </nav>
+</div>
+
+<!-- 新增單字 -->
+<div class="sheet-overlay" id="addOverlay" hidden>
+  <div class="sheet" id="addSheet">
+    <div class="sheet-handle"></div>
+    <h2>新增單字</h2>
+    <label>日文單字
+      <div class="input-row">
+        <input type="text" id="inputJp" placeholder="例：勉強する">
+        <button id="btnTranslate" class="btn-secondary" type="button">翻譯</button>
+      </div>
+    </label>
+    <div id="translateStatus" class="hint-text"></div>
+    <label>中文翻譯
+      <input type="text" id="inputZh" placeholder="翻譯結果會出現在這裡，可手動修改">
+    </label>
+    <label>筆記（選填）
+      <input type="text" id="inputNote" placeholder="例句、詞性、記憶技巧…">
+    </label>
+    <div class="sheet-actions">
+      <button id="btnCancelAdd" class="btn-ghost" type="button">取消</button>
+      <button id="btnSubmitAdd" class="btn-primary" type="button">新增</button>
+    </div>
+  </div>
+</div>
+
+<!-- 單字列表 -->
+<div class="sheet-overlay" id="listOverlay" hidden>
+  <div class="sheet sheet-tall" id="listSheet">
+    <div class="sheet-handle"></div>
+    <h2>單字列表</h2>
+    <input type="search" id="searchInput" class="search-input" placeholder="搜尋日文或中文…">
+    <div class="sort-row">
+      <button class="chip" data-sort="time_desc" type="button">新→舊</button>
+      <button class="chip" data-sort="time_asc" type="button">舊→新</button>
+      <button class="chip" data-sort="kana" type="button">あ→ん</button>
+      <button class="chip" data-sort="random" type="button">🎲 隨機</button>
+    </div>
+    <div class="word-list" id="wordList"></div>
+    <div class="sheet-actions io-row">
+      <button id="btnExport" class="btn-ghost" type="button">匯出 JSON</button>
+      <button id="btnImport" class="btn-ghost" type="button">匯入 JSON</button>
+      <input type="file" id="fileImport" accept="application/json" hidden>
+    </div>
+    <button id="btnCloseList" class="btn-primary full" type="button">關閉</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  const STORAGE_KEY = 'jpfc_words_v1';
+  const INIT_FLAG   = 'jpfc_seeded_v1';
+  const SORT_KEY    = 'jpfc_sort_v1';
+
+  let words = [];
+  let sortMode = localStorage.getItem(SORT_KEY) || 'time_desc';
+  let randomOrder = [];
+  let currentId = null;
+  let revealed = false;
+
+  const $ = (id) => document.getElementById(id);
+
+  function genId(){
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  }
+
+  function seedWords(){
+    const now = Date.now();
+    return [
+      {id:genId(), jp:'こんにちは', zh:'你好', note:'日常問候語', createdAt: now-4000},
+      {id:genId(), jp:'ありがとう', zh:'謝謝', note:'', createdAt: now-3000},
+      {id:genId(), jp:'猫', zh:'貓', note:'ねこ', createdAt: now-2000},
+      {id:genId(), jp:'勉強する', zh:'學習、用功', note:'他動詞', createdAt: now-1000},
+      {id:genId(), jp:'大丈夫', zh:'沒關係、不要緊', note:'だいじょうぶ', createdAt: now}
+    ];
+  }
+
+  function loadWords(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      words = raw ? JSON.parse(raw) : [];
+    }catch(e){ words = []; }
+    if(!localStorage.getItem(INIT_FLAG) && words.length === 0){
+      words = seedWords();
+      saveWords();
+    }
+    localStorage.setItem(INIT_FLAG, '1');
+  }
+
+  function saveWords(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(words));
+  }
+
+  function shuffleRandomOrder(){
+    randomOrder = words.map(w => w.id);
+    for(let i = randomOrder.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [randomOrder[i], randomOrder[j]] = [randomOrder[j], randomOrder[i]];
+    }
+  }
+
+  function getSortedList(){
+    let list = words.slice();
+    if(sortMode === 'time_desc'){
+      list.sort((a,b) => b.createdAt - a.createdAt);
+    }else if(sortMode === 'time_asc'){
+      list.sort((a,b) => a.createdAt - b.createdAt);
+    }else if(sortMode === 'kana'){
+      const collator = new Intl.Collator('ja');
+      list.sort((a,b) => collator.compare(a.jp, b.jp));
+    }else if(sortMode === 'random'){
+      const idx = {};
+      randomOrder.forEach((id,i) => idx[id] = i);
+      list.sort((a,b) => (idx[a.id] ?? 0) - (idx[b.id] ?? 0));
+    }
+    return list;
+  }
+
+  function setSortMode(mode){
+    if(mode === 'random') shuffleRandomOrder();
+    sortMode = mode;
+    localStorage.setItem(SORT_KEY, mode);
+    updateSortChips();
+    renderCard();
+    renderList();
+  }
+
+  function updateSortChips(){
+    document.querySelectorAll('.chip[data-sort]').forEach(btn=>{
+      btn.classList.toggle('active', btn.dataset.sort === sortMode);
+    });
+  }
+
+  function ensureCurrentId(list){
+    if(list.length === 0){ currentId = null; return; }
+    if(!currentId || !list.find(w => w.id === currentId)){
+      currentId = list[0].id;
+    }
+  }
+
+  function renderCard(){
+    const list = getSortedList();
+    ensureCurrentId(list);
+    const total = list.length;
+    const card = $('card');
+    const emptyState = $('emptyState');
+    const bottomNav = document.querySelector('.bottom-nav');
+
+    if(total === 0){
+      card.hidden = true;
+      emptyState.hidden = false;
+      bottomNav.hidden = true;
+      return;
+    }
+    card.hidden = false;
+    emptyState.hidden = true;
+    bottomNav.hidden = false;
+
+    const idx = list.findIndex(w => w.id === currentId);
+    const w = list[idx];
+    $('cardIndex').textContent = 'No. ' + String(idx+1).padStart(3,'0');
+    $('cardTotal').textContent = '/ ' + String(total).padStart(3,'0');
+    $('jpWord').textContent = w.jp;
+    $('zhText').textContent = w.zh || '（尚無翻譯）';
+    $('zhNote').textContent = w.note || '';
+    $('zhNote').hidden = !w.note;
+
+    revealed = false;
+    applyReveal();
+
+    $('btnPrev').disabled = total <= 1;
+    $('btnNext').disabled = total <= 1;
+  }
+
+  function applyReveal(){
+    $('zhContent').classList.toggle('blurred', !revealed);
+    $('zhHint').hidden = revealed;
+    $('sealBtn').classList.toggle('used', revealed);
+  }
+
+  function toggleReveal(){
+    revealed = !revealed;
+    applyReveal();
+  }
+
+  function goDelta(delta){
+    const list = getSortedList();
+    if(list.length === 0) return;
+    let idx = list.findIndex(w => w.id === currentId);
+    idx = (idx + delta + list.length) % list.length;
+    currentId = list[idx].id;
+    renderCard();
+  }
+
+  // ---- 新增單字 ----
+  function openAddSheet(){
+    $('inputJp').value = '';
+    $('inputZh').value = '';
+    $('inputNote').value = '';
+    $('translateStatus').textContent = '';
+    $('addOverlay').hidden = false;
+    setTimeout(()=> $('inputJp').focus(), 50);
+  }
+  function closeAddSheet(){ $('addOverlay').hidden = true; }
+
+  async function doTranslate(){
+    const jp = $('inputJp').value.trim();
+    if(!jp){ $('translateStatus').textContent = '請先輸入日文單字'; return; }
+    $('translateStatus').textContent = '翻譯中…';
+    try{
+      const res = await fetch('https://api.mymemory.translated.net/get?q=' + encodeURIComponent(jp) + '&langpair=ja|zh-TW');
+      const data = await res.json();
+      const text = data && data.responseData && data.responseData.translatedText;
+      if(text){
+        $('inputZh').value = text;
+        $('translateStatus').textContent = '翻譯完成，可再手動修改';
+      }else{
+        $('translateStatus').textContent = '查無翻譯結果，請手動輸入';
+      }
+    }catch(e){
+      $('translateStatus').textContent = '翻譯失敗，請手動輸入';
+    }
+  }
+
+  function submitAdd(){
+    const jp = $('inputJp').value.trim();
+    const zh = $('inputZh').value.trim();
+    const note = $('inputNote').value.trim();
+    if(!jp){ $('translateStatus').textContent = '請輸入日文單字'; return; }
+    const w = {id:genId(), jp, zh, note, createdAt: Date.now()};
+    words.push(w);
+    saveWords();
+    if(sortMode === 'random') randomOrder.push(w.id);
+    currentId = w.id;
+    closeAddSheet();
+    renderCard();
+    renderList();
+  }
+
+  // ---- 單字列表 ----
+  function openListSheet(){
+    $('listOverlay').hidden = false;
+    $('searchInput').value = '';
+    updateSortChips();
+    renderList();
+  }
+  function closeListSheet(){ $('listOverlay').hidden = true; }
+
+  function renderList(){
+    const q = $('searchInput').value.trim().toLowerCase();
+    const list = getSortedList().filter(w=>{
+      if(!q) return true;
+      return w.jp.toLowerCase().includes(q) || (w.zh || '').toLowerCase().includes(q);
+    });
+    const container = $('wordList');
+    container.innerHTML = '';
+    if(list.length === 0){
+      const p = document.createElement('p');
+      p.className = 'hint-text';
+      p.textContent = '沒有符合的單字';
+      container.appendChild(p);
+      return;
+    }
+    list.forEach(w=>{
+      const row = document.createElement('div');
+      row.className = 'word-row';
+      row.innerHTML = '<div class="word-row-text"><div class="word-row-jp"></div><div class="word-row-zh"></div></div><button class="word-row-del" type="button">刪除</button>';
+      row.querySelector('.word-row-jp').textContent = w.jp;
+      row.querySelector('.word-row-zh').textContent = w.zh || '（尚無翻譯）';
+      row.querySelector('.word-row-del').addEventListener('click', (e)=>{
+        e.stopPropagation();
+        if(confirm('確定要刪除「' + w.jp + '」嗎？')){
+          words = words.filter(x => x.id !== w.id);
+          saveWords();
+          if(currentId === w.id) currentId = null;
+          renderList();
+          renderCard();
+        }
+      });
+      row.addEventListener('click', ()=>{
+        currentId = w.id;
+        renderCard();
+        closeListSheet();
+      });
+      container.appendChild(row);
+    });
+  }
+
+  // ---- 匯出 / 匯入 ----
+  function exportJson(){
+    const blob = new Blob([JSON.stringify(words, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const d = new Date();
+    const stamp = d.getFullYear() + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0');
+    a.href = url;
+    a.download = 'jp_flashcards_' + stamp + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function importJson(file){
+    const reader = new FileReader();
+    reader.onload = (e)=>{
+      try{
+        const data = JSON.parse(e.target.result);
+        if(!Array.isArray(data)) throw new Error('格式錯誤');
+        const cleaned = data.filter(x => x && typeof x.jp === 'string').map(x => ({
+          id: genId(),
+          jp: x.jp,
+          zh: x.zh || '',
+          note: x.note || '',
+          createdAt: typeof x.createdAt === 'number' ? x.createdAt : Date.now()
+        }));
+        if(cleaned.length === 0){ alert('檔案中沒有可匯入的單字'); return; }
+        if(confirm('將匯入 ' + cleaned.length + ' 筆單字，與現有資料合併，是否繼續？')){
+          words = words.concat(cleaned);
+          saveWords();
+          renderList();
+          renderCard();
+        }
+      }catch(err){
+        alert('匯入失敗，請確認 JSON 格式是否正確');
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  // ---- 滑動切換 ----
+  function initSwipe(){
+    const card = $('card');
+    let startX = 0, startY = 0, tracking = false;
+    card.addEventListener('touchstart', (e)=>{
+      if(e.touches.length !== 1) return;
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      tracking = true;
+    }, {passive:true});
+    card.addEventListener('touchend', (e)=>{
+      if(!tracking) return;
+      tracking = false;
+      const t = e.changedTouches[0];
+      const dx = t.clientX - startX;
+      const dy = t.clientY - startY;
+      if(Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5){
+        if(dx < 0) goDelta(1); else goDelta(-1);
+      }
+    }, {passive:true});
+  }
+
+  function initEvents(){
+    $('btnPrev').addEventListener('click', ()=>goDelta(-1));
+    $('btnNext').addEventListener('click', ()=>goDelta(1));
+    $('zhZone').addEventListener('click', toggleReveal);
+
+    $('btnAdd').addEventListener('click', openAddSheet);
+    $('btnCancelAdd').addEventListener('click', closeAddSheet);
+    $('addOverlay').addEventListener('click', (e)=>{ if(e.target.id === 'addOverlay') closeAddSheet(); });
+    $('btnTranslate').addEventListener('click', doTranslate);
+    $('btnSubmitAdd').addEventListener('click', submitAdd);
+
+    $('btnList').addEventListener('click', openListSheet);
+    $('btnCloseList').addEventListener('click', closeListSheet);
+    $('listOverlay').addEventListener('click', (e)=>{ if(e.target.id === 'listOverlay') closeListSheet(); });
+    $('searchInput').addEventListener('input', renderList);
+    document.querySelectorAll('.chip[data-sort]').forEach(btn=>{
+      btn.addEventListener('click', ()=>setSortMode(btn.dataset.sort));
+    });
+
+    $('btnExport').addEventListener('click', exportJson);
+    $('btnImport').addEventListener('click', ()=>$('fileImport').click());
+    $('fileImport').addEventListener('change', (e)=>{
+      const file = e.target.files[0];
+      if(file) importJson(file);
+      e.target.value = '';
+    });
+  }
+
+  function init(){
+    loadWords();
+    if(sortMode === 'random') shuffleRandomOrder();
+    initEvents();
+    initSwipe();
+    updateSortChips();
+    renderCard();
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+})();
+</script>
+</body>
+</html>
