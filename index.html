@@ -49,7 +49,7 @@
     padding: env(safe-area-inset-top, 16px) 16px env(safe-area-inset-bottom, 16px);
   }
 
-  /* ---------- 頂部工具列 ---------- */
+  /* ---------- 頂部列 ---------- */
   .topbar {
     height: 52px;
     display: flex;
@@ -191,9 +191,7 @@
     border-radius: 12px;
     cursor: pointer;
   }
-  .nav-btn:active {
-    opacity: 0.85;
-  }
+  .nav-btn:active { opacity: 0.85; }
   .nav-btn[disabled] {
     opacity: 0.3;
     cursor: not-allowed;
@@ -274,17 +272,10 @@
     outline: none;
     border-color: var(--primary);
   }
-  .input-group {
-    display: flex;
-    gap: 8px;
-  }
-  .input-group input {
-    flex: 1;
-  }
   .status-text {
-    font-size: 0.75rem;
+    font-size: 0.78rem;
     color: var(--primary);
-    min-height: 1rem;
+    min-height: 1.1rem;
   }
 
   .btn {
@@ -307,6 +298,14 @@
     color: var(--text-main);
   }
   .btn-secondary:active { background-color: var(--border); }
+  .btn-text {
+    border: none;
+    background: transparent;
+    color: var(--primary);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
   .sheet-actions {
     display: flex;
     gap: 10px;
@@ -350,7 +349,7 @@
     background: var(--bg);
     border: 1px solid var(--border);
     border-radius: 10px;
-    padding: 10px 12px;
+    padding: 12px 14px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -378,13 +377,17 @@
     margin-top: 2px;
   }
   .word-item-ops {
-    display: flex;
+    display: none;
     gap: 6px;
   }
+  /* 管理模式下顯示按鈕 */
+  .management-mode .word-item-ops {
+    display: flex;
+  }
   .btn-sm {
-    padding: 5px 8px;
+    padding: 6px 10px;
     border-radius: 6px;
-    font-size: 0.75rem;
+    font-size: 0.78rem;
     font-weight: 600;
     border: 1px solid var(--border);
     background: #FFFFFF;
@@ -400,14 +403,12 @@
 <body>
 
 <div id="app">
-  <!-- 頂部列 -->
   <header class="topbar">
     <button class="icon-btn" id="btnList" aria-label="單字列表">☰</button>
     <div class="topbar-title">Flashcard</div>
     <button class="icon-btn" id="btnAdd" aria-label="新增單字">＋</button>
   </header>
 
-  <!-- 卡片主區 -->
   <main class="stage">
     <div class="card" id="mainCard">
       <div class="card-meta">
@@ -426,11 +427,10 @@
       </div>
     </div>
     <div class="empty-state" id="emptyState" style="display: none;">
-      <p>目前沒有任何單字，點右上角「＋」開始新增！</p>
+      <p>目前單字庫是空的，點右上角「＋」開始新增！</p>
     </div>
   </main>
 
-  <!-- 底部切換按鈕 -->
   <footer class="bottom-nav">
     <button class="nav-btn" id="btnPrev">← 上一個</button>
     <button class="nav-btn" id="btnNext">下一個 →</button>
@@ -446,14 +446,11 @@
     </div>
     <div class="sheet-body">
       <label>原文單字 / 句子
-        <div class="input-group">
-          <input type="text" id="inputWord" placeholder="輸入任何語言的單字…">
-          <button type="button" class="btn btn-secondary" id="btnAutoTranslate">翻譯</button>
-        </div>
+        <input type="text" id="inputWord" placeholder="輸入單字，系統將自動翻譯…">
       </label>
       <div class="status-text" id="translateStatus"></div>
       <label>中文翻譯
-        <input type="text" id="inputTrans" placeholder="自動翻譯或手動輸入…">
+        <input type="text" id="inputTrans" placeholder="自動翻譯結果（可手動修改）">
       </label>
       <label>補充筆記（選填）
         <input type="text" id="inputNote" placeholder="例句、詞性、用法筆記…">
@@ -471,7 +468,8 @@
   <div class="sheet">
     <div class="sheet-handle"></div>
     <div class="sheet-header">
-      <div class="sheet-title">單字管理</div>
+      <div class="sheet-title">單字列表</div>
+      <button type="button" class="btn-text" id="btnToggleManage">管理單字</button>
     </div>
     <div class="sheet-body">
       <input type="search" id="searchInput" placeholder="搜尋單字、翻譯或筆記…">
@@ -491,7 +489,7 @@
 
 <script>
 (function() {
-  const STORAGE_KEY = 'universal_flashcards_data';
+  const STORAGE_KEY = 'universal_flashcards_data_clean';
   const SORT_KEY = 'universal_flashcards_sort';
 
   let words = [];
@@ -500,20 +498,13 @@
   let currentWordId = null;
   let isRevealed = false;
   let editingId = null;
+  let isManageMode = false;
+  let debounceTimer = null;
 
   const $ = (id) => document.getElementById(id);
 
   function createId() {
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-  }
-
-  function getInitialWords() {
-    const now = Date.now();
-    return [
-      { id: createId(), word: 'Bonjour', trans: '你好（法文）', note: '日常問候', createdAt: now - 3000 },
-      { id: createId(), word: '勉強する', trans: '學習、用功（日文）', note: '他動詞', createdAt: now - 2000 },
-      { id: createId(), word: 'Serendipity', trans: '意外發現的美好事物（英文）', note: '名詞', createdAt: now - 1000 }
-    ];
   }
 
   function loadData() {
@@ -522,11 +513,6 @@
       words = raw ? JSON.parse(raw) : [];
     } catch (e) {
       words = [];
-    }
-    if (words.length === 0 && !localStorage.getItem('visited')) {
-      words = getInitialWords();
-      saveData();
-      localStorage.setItem('visited', '1');
     }
   }
 
@@ -634,7 +620,37 @@
     renderCard();
   }
 
-  /* ---------- 表單流程 (新增/編輯) ---------- */
+  /* ---------- 自動翻譯流程 (Debounced) ---------- */
+  async function triggerAutoTranslate() {
+    const word = $('inputWord').value.trim();
+    if (!word) {
+      $('translateStatus').textContent = '';
+      return;
+    }
+    $('translateStatus').textContent = '自動翻譯中…';
+
+    try {
+      const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(word)}&langpair=Autodetect|zh-TW`);
+      const data = await res.json();
+      if (data && data.responseData && data.responseData.translatedText) {
+        $('inputTrans').value = data.responseData.translatedText;
+        $('translateStatus').textContent = '已自動填入翻譯，可點擊修改';
+      } else {
+        $('translateStatus').textContent = '未能取得翻譯，可手動輸入';
+      }
+    } catch (e) {
+      $('translateStatus').textContent = '無法連線翻譯，可直接手動輸入';
+    }
+  }
+
+  function onWordInput() {
+    if (editingId) return; // 編輯舊單字時不自動覆寫翻譯
+    clearTimeout(debounceTimer);
+    $('translateStatus').textContent = '輸入中…';
+    debounceTimer = setTimeout(triggerAutoTranslate, 500);
+  }
+
+  /* ---------- 表單流程 ---------- */
   function openForm(targetId = null) {
     editingId = targetId;
     $('translateStatus').textContent = '';
@@ -662,35 +678,13 @@
     editingId = null;
   }
 
-  async function translateWord() {
-    const word = $('inputWord').value.trim();
-    if (!word) {
-      $('translateStatus').textContent = '請先輸入原文單字';
-      return;
-    }
-    $('translateStatus').textContent = '翻譯中…';
-
-    try {
-      const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(word)}&langpair=Autodetect|zh-TW`);
-      const data = await res.json();
-      if (data && data.responseData && data.responseData.translatedText) {
-        $('inputTrans').value = data.responseData.translatedText;
-        $('translateStatus').textContent = '翻譯完成，可手動微調';
-      } else {
-        $('translateStatus').textContent = '無翻譯結果，請手動輸入';
-      }
-    } catch (e) {
-      $('translateStatus').textContent = '連線失敗，請直接手動輸入';
-    }
-  }
-
   function saveForm() {
     const word = $('inputWord').value.trim();
     const trans = $('inputTrans').value.trim();
     const note = $('inputNote').value.trim();
 
     if (!word) {
-      $('translateStatus').textContent = '原文不能為空';
+      $('translateStatus').textContent = '請填寫原文單字';
       return;
     }
 
@@ -720,8 +714,10 @@
     renderList();
   }
 
-  /* ---------- 清單管理 ---------- */
+  /* ---------- 清單與管理模式 ---------- */
   function openList() {
+    isManageMode = false;
+    updateManageBtnText();
     $('listOverlay').classList.add('active');
     $('searchInput').value = '';
     updateSortChips();
@@ -730,6 +726,16 @@
 
   function closeList() {
     $('listOverlay').classList.remove('active');
+  }
+
+  function toggleManageMode() {
+    isManageMode = !isManageMode;
+    updateManageBtnText();
+    renderList();
+  }
+
+  function updateManageBtnText() {
+    $('btnToggleManage').textContent = isManageMode ? '完成' : '管理 / 編輯';
   }
 
   function renderList() {
@@ -743,6 +749,7 @@
 
     const container = $('wordListContainer');
     container.innerHTML = '';
+    container.className = isManageMode ? 'word-list management-mode' : 'word-list';
 
     if (list.length === 0) {
       const empty = document.createElement('div');
@@ -750,7 +757,7 @@
       empty.style.color = 'var(--text-muted)';
       empty.style.fontSize = '0.85rem';
       empty.style.padding = '20px 0';
-      empty.textContent = '查無符合的單字';
+      empty.textContent = '查無符合單字';
       container.appendChild(empty);
       return;
     }
@@ -806,17 +813,20 @@
       item.appendChild(info);
       item.appendChild(ops);
 
+      // 非管理模式下點擊單字可直接跳轉複習
       item.onclick = () => {
-        currentWordId = w.id;
-        renderCard();
-        closeList();
+        if (!isManageMode) {
+          currentWordId = w.id;
+          renderCard();
+          closeList();
+        }
       };
 
       container.appendChild(item);
     });
   }
 
-  /* ---------- 滑動手勢支援 ---------- */
+  /* ---------- 觸控滑動 ---------- */
   function initSwipe() {
     const card = $('mainCard');
     let startX = 0, startY = 0, tracking = false;
@@ -834,61 +844,41 @@
       const dx = e.changedTouches[0].clientX - startX;
       const dy = e.changedTouches[0].clientY - startY;
 
-      // 水平位移大於 50px 且水平位移顯著大於垂直位移時觸發切換
       if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
-        if (dx < 0) {
-          stepCard(1); // 左滑：下一個
-        } else {
-          stepCard(-1); // 右滑：上一個
-        }
+        if (dx < 0) stepCard(1);
+        else stepCard(-1);
       }
     }, { passive: true });
   }
 
-  /* ---------- 事件監聽綁定 ---------- */
+  /* ---------- 事件監聽 ---------- */
   function initEvents() {
-    // 刷卡操作
     $('btnPrev').onclick = () => stepCard(-1);
     $('btnNext').onclick = () => stepCard(1);
     $('transZone').onclick = toggleReveal;
 
-    // 表單彈窗
     $('btnAdd').onclick = () => openForm();
     $('btnCancelForm').onclick = closeForm;
-    $('btnAutoTranslate').onclick = translateWord;
     $('btnSaveForm').onclick = saveForm;
+    $('inputWord').oninput = onWordInput;
     $('formOverlay').onclick = (e) => {
       if (e.target === $('formOverlay')) closeForm();
     };
 
-    // 清單彈窗
     $('btnList').onclick = openList;
     $('btnCloseList').onclick = closeList;
+    $('btnToggleManage').onclick = toggleManageMode;
     $('searchInput').oninput = renderList;
     $('listOverlay').onclick = (e) => {
       if (e.target === $('listOverlay')) closeList();
     };
 
-    // 排序切換
     document.querySelectorAll('.chip[data-sort]').forEach(chip => {
       chip.onclick = () => setSort(chip.dataset.sort);
     });
-
-    // 鍵盤支援 (桌面端除錯時好用)
-    window.onkeydown = (e) => {
-      if ($('formOverlay').classList.contains('active') || $('listOverlay').classList.contains('active')) return;
-      if (e.code === 'Space') {
-        e.preventDefault();
-        toggleReveal();
-      } else if (e.code === 'ArrowRight') {
-        stepCard(1);
-      } else if (e.code === 'ArrowLeft') {
-        stepCard(-1);
-      }
-    };
   }
 
-  // 初始化啟動
+  // 初始化
   loadData();
   if (sortMode === 'random') shuffleRandomOrder();
   initEvents();
