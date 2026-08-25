@@ -66,6 +66,7 @@
     font-size:1.3rem;
     border-radius:50%;
     display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
   }
   .icon-btn:active{background:var(--paper-2);}
 
@@ -87,6 +88,7 @@
     display:flex;
     flex-direction:column;
     min-height:56vh;
+    user-select:none;
   }
   .card-meta{
     display:flex;
@@ -140,6 +142,7 @@
     font-size:1.15rem;
     transform:rotate(-8deg);
     display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
   }
   .seal.used{
     background:transparent;
@@ -193,6 +196,7 @@
     font-size:1rem;
     font-weight:500;
     border-radius:14px;
+    cursor:pointer;
   }
   .nav-btn:active{background:var(--indigo-2);}
   .nav-btn[disabled]{opacity:.35;pointer-events:none;}
@@ -257,6 +261,7 @@
     border-radius:10px;
     font-size:.9rem;
     font-family:'Noto Sans TC',sans-serif;
+    cursor:pointer;
   }
   .btn-secondary:active{background:var(--paper-2);}
   .hint-text{
@@ -278,6 +283,7 @@
     font-size:.95rem;
     font-family:'Noto Sans TC',sans-serif;
     font-weight:500;
+    cursor:pointer;
   }
   .btn-ghost{
     border:1px solid var(--line);
@@ -308,6 +314,7 @@
     color:var(--ink-soft);
     font-size:.8rem;
     font-family:'Noto Sans TC',sans-serif;
+    cursor:pointer;
   }
   .chip.active{
     border-color:var(--seal);
@@ -330,8 +337,9 @@
     gap:10px;
     background:#FBF9F2;
     padding:12px 14px;
+    cursor:pointer;
   }
-  .word-row-text{min-width:0;}
+  .word-row-text{min-width:0;flex:1;}
   .word-row-jp{
     font-family:'Shippori Mincho',serif;
     font-size:1rem;
@@ -351,6 +359,7 @@
     font-size:.75rem;
     padding:7px 10px;
     border-radius:8px;
+    cursor:pointer;
   }
   .word-row-del:active{background:#A6392E22;}
   .io-row{margin-bottom:0;}
@@ -358,7 +367,6 @@
 </head>
 <body>
 <div id="app">
-
   <header class="topbar">
     <button id="btnList" class="icon-btn" aria-label="單字列表">☰</button>
     <div class="brand">日文單字卡</div>
@@ -383,7 +391,7 @@
         <div class="zh-hint" id="zhHint">點按查看翻譯</div>
       </div>
     </div>
-    <div class="empty-state" id="emptyState" hidden>
+    <div class="empty-state" id="emptyState" style="display:none;">
       <p>還沒有單字，點右上角「＋」新增第一個吧。</p>
     </div>
   </main>
@@ -395,7 +403,7 @@
 </div>
 
 <!-- 新增單字 -->
-<div class="sheet-overlay" id="addOverlay" hidden>
+<div class="sheet-overlay" id="addOverlay" style="display:none;">
   <div class="sheet" id="addSheet">
     <div class="sheet-handle"></div>
     <h2>新增單字</h2>
@@ -420,7 +428,7 @@
 </div>
 
 <!-- 單字列表 -->
-<div class="sheet-overlay" id="listOverlay" hidden>
+<div class="sheet-overlay" id="listOverlay" style="display:none;">
   <div class="sheet sheet-tall" id="listSheet">
     <div class="sheet-handle"></div>
     <h2>單字列表</h2>
@@ -435,7 +443,7 @@
     <div class="sheet-actions io-row">
       <button id="btnExport" class="btn-ghost" type="button">匯出 JSON</button>
       <button id="btnImport" class="btn-ghost" type="button">匯入 JSON</button>
-      <input type="file" id="fileImport" accept="application/json" hidden>
+      <input type="file" id="fileImport" accept="application/json" style="display:none;">
     </div>
     <button id="btnCloseList" class="btn-primary full" type="button">關閉</button>
   </div>
@@ -542,23 +550,23 @@
     const bottomNav = document.querySelector('.bottom-nav');
 
     if(total === 0){
-      card.hidden = true;
-      emptyState.hidden = false;
-      bottomNav.hidden = true;
+      card.style.display = 'none';
+      emptyState.style.display = 'block';
+      bottomNav.style.display = 'none';
       return;
     }
-    card.hidden = false;
-    emptyState.hidden = true;
-    bottomNav.hidden = false;
+    card.style.display = 'flex';
+    emptyState.style.display = 'none';
+    bottomNav.style.display = 'flex';
 
     const idx = list.findIndex(w => w.id === currentId);
-    const w = list[idx];
+    const w = list[idx] || list[0];
     $('cardIndex').textContent = 'No. ' + String(idx+1).padStart(3,'0');
     $('cardTotal').textContent = '/ ' + String(total).padStart(3,'0');
     $('jpWord').textContent = w.jp;
     $('zhText').textContent = w.zh || '（尚無翻譯）';
     $('zhNote').textContent = w.note || '';
-    $('zhNote').hidden = !w.note;
+    $('zhNote').style.display = w.note ? 'block' : 'none';
 
     revealed = false;
     applyReveal();
@@ -569,7 +577,7 @@
 
   function applyReveal(){
     $('zhContent').classList.toggle('blurred', !revealed);
-    $('zhHint').hidden = revealed;
+    $('zhHint').style.display = revealed ? 'none' : 'block';
     $('sealBtn').classList.toggle('used', revealed);
   }
 
@@ -593,10 +601,10 @@
     $('inputZh').value = '';
     $('inputNote').value = '';
     $('translateStatus').textContent = '';
-    $('addOverlay').hidden = false;
-    setTimeout(()=> $('inputJp').focus(), 50);
+    $('addOverlay').style.display = 'flex';
+    setTimeout(()=> $('inputJp').focus(), 100);
   }
-  function closeAddSheet(){ $('addOverlay').hidden = true; }
+  function closeAddSheet(){ $('addOverlay').style.display = 'none'; }
 
   async function doTranslate(){
     const jp = $('inputJp').value.trim();
@@ -613,7 +621,7 @@
         $('translateStatus').textContent = '查無翻譯結果，請手動輸入';
       }
     }catch(e){
-      $('translateStatus').textContent = '翻譯失敗，請手動輸入';
+      $('translateStatus').textContent = '翻譯失敗（請檢查網路），可手動輸入';
     }
   }
 
@@ -634,12 +642,12 @@
 
   // ---- 單字列表 ----
   function openListSheet(){
-    $('listOverlay').hidden = false;
+    $('listOverlay').style.display = 'flex';
     $('searchInput').value = '';
     updateSortChips();
     renderList();
   }
-  function closeListSheet(){ $('listOverlay').hidden = true; }
+  function closeListSheet(){ $('listOverlay').style.display = 'none'; }
 
   function renderList(){
     const q = $('searchInput').value.trim().toLowerCase();
@@ -652,6 +660,7 @@
     if(list.length === 0){
       const p = document.createElement('p');
       p.className = 'hint-text';
+      p.style.padding = '12px';
       p.textContent = '沒有符合的單字';
       container.appendChild(p);
       return;
@@ -782,7 +791,11 @@
     renderCard();
   }
 
-  document.addEventListener('DOMContentLoaded', init);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 })();
 </script>
 </body>
