@@ -23,6 +23,7 @@
     --primary-hover: #1D4ED8;
     --border: #E2E8F0;
     --danger: #EF4444;
+    --star-active: #F59E0B;
     --card-bg: #FFFFFF;
     --mask-bg: #EEF2F6;
     --radius: 16px;
@@ -124,12 +125,34 @@
   .card-meta {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     font-size: 0.8rem;
     font-weight: 600;
     color: var(--text-muted);
     padding-bottom: 12px;
     border-bottom: 1px solid var(--border);
   }
+  .meta-left {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .star-btn-card {
+    background: transparent;
+    border: none;
+    font-size: 1.3rem;
+    color: var(--border);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    padding: 2px 4px;
+    transition: color 0.15s ease, transform 0.1s ease;
+  }
+  .star-btn-card:active { transform: scale(1.2); }
+  .star-btn-card.active { color: var(--star-active); }
+
   .word-zone {
     flex: 1.2;
     display: flex;
@@ -332,7 +355,7 @@
   }
   .sheet-actions .btn { flex: 1; }
 
-  /* 排序標籤 */
+  /* 排序與過濾標籤 */
   .sort-bar {
     display: flex;
     gap: 6px;
@@ -355,6 +378,11 @@
     background: #EFF6FF;
     color: var(--primary);
   }
+  .chip-star.active {
+    border-color: var(--star-active);
+    background: #FFFBEB;
+    color: #D97706;
+  }
 
   /* 單字列表與行內展開編輯 */
   .word-list {
@@ -375,7 +403,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
+    gap: 10px;
     cursor: pointer;
   }
   .word-item-info { flex: 1; min-width: 0; }
@@ -395,6 +423,17 @@
     white-space: nowrap;
     margin-top: 2px;
   }
+  .word-item-star-btn {
+    background: transparent;
+    border: none;
+    font-size: 1.25rem;
+    color: var(--border);
+    cursor: pointer;
+    line-height: 1;
+    padding: 4px;
+  }
+  .word-item-star-btn.active { color: var(--star-active); }
+
   .word-item-ops {
     display: none;
     gap: 6px;
@@ -496,7 +535,10 @@
   <main class="stage">
     <div class="card" id="mainCard" style="display: none;">
       <div class="card-meta">
-        <span id="metaIndex">No. 000</span>
+        <div class="meta-left">
+          <button type="button" class="star-btn-card" id="btnCardStar" aria-label="收藏單字">★</button>
+          <span id="metaIndex">No. 000</span>
+        </div>
         <span id="metaTotal">/ 000</span>
       </div>
       <div class="word-zone">
@@ -570,7 +612,7 @@
   </div>
 </div>
 
-<!-- 單字列表管理 (含行內無遮擋編輯) -->
+<!-- 單字列表管理 (含收藏過濾與行內編輯) -->
 <div class="sheet-overlay" id="listOverlay">
   <div class="sheet">
     <div class="sheet-handle"></div>
@@ -581,6 +623,7 @@
     <div class="sheet-body">
       <input type="search" id="searchInput" placeholder="搜尋當前清單單字…">
       <div class="sort-bar">
+        <button type="button" class="chip chip-star" id="btnFilterStarred">★ 僅看收藏</button>
         <button type="button" class="chip" data-sort="time_desc">最新</button>
         <button type="button" class="chip" data-sort="time_asc">最舊</button>
         <button type="button" class="chip" data-sort="alpha">A-Z 字典序</button>
@@ -605,6 +648,7 @@
   let words = [];
   let activeDeckId = null;
   let sortMode = localStorage.getItem(SORT_KEY) || 'time_desc';
+  let isStarredFilterActive = false;
   let randomOrder = [];
   let currentWordId = null;
   let isRevealed = false;
@@ -623,6 +667,10 @@
     try {
       decks = JSON.parse(localStorage.getItem(STORAGE_DECKS)) || [];
       words = JSON.parse(localStorage.getItem(STORAGE_WORDS)) || [];
+      // 確保舊資料有 starred 屬性
+      words.forEach(w => {
+        if (typeof w.starred !== 'boolean') w.starred = false;
+      });
       activeDeckId = localStorage.getItem(STORAGE_ACTIVE_DECK) || (decks[0] ? decks[0].id : null);
     } catch (e) {
       decks = [];
@@ -636,6 +684,16 @@
     localStorage.setItem(STORAGE_WORDS, JSON.stringify(words));
     if (activeDeckId) localStorage.setItem(STORAGE_ACTIVE_DECK, activeDeckId);
     else localStorage.removeItem(STORAGE_ACTIVE_DECK);
+  }
+
+  /* ---------- 收藏切換核心函式 ---------- */
+  function toggleStar(wordId) {
+    const target = words.find(w => w.id === wordId);
+    if (!target) return;
+    target.starred = !target.starred;
+    saveData();
+    renderCard();
+    renderList();
   }
 
   /* ---------- 清單過濾與排序 ---------- */
@@ -682,6 +740,7 @@
     document.querySelectorAll('.chip[data-sort]').forEach(chip => {
       chip.classList.toggle('active', chip.dataset.sort === sortMode);
     });
+    $('btnFilterStarred').classList.toggle('active', isStarredFilterActive);
   }
 
   /* ---------- 主舞台刷卡渲染 ---------- */
@@ -736,6 +795,9 @@
     $('displayTrans').textContent = current.trans || '(無翻譯)';
     $('displayNote').textContent = current.note || '';
     $('displayNote').style.display = current.note ? 'block' : 'none';
+
+    // 更新主卡片星星狀態
+    $('btnCardStar').classList.toggle('active', !!current.starred);
 
     isRevealed = false;
     applyReveal();
@@ -932,6 +994,7 @@
       word,
       trans,
       note,
+      starred: false,
       createdAt: Date.now()
     };
     words.push(newWord);
@@ -977,6 +1040,7 @@
   function renderList() {
     const query = $('searchInput').value.trim().toLowerCase();
     const list = getSortedActiveWords().filter(w => {
+      if (isStarredFilterActive && !w.starred) return false;
       if (!query) return true;
       return w.word.toLowerCase().includes(query) ||
              (w.trans && w.trans.toLowerCase().includes(query)) ||
@@ -993,7 +1057,7 @@
       empty.style.color = 'var(--text-muted)';
       empty.style.fontSize = '0.85rem';
       empty.style.padding = '20px 0';
-      empty.textContent = '此清單查無單字';
+      empty.textContent = isStarredFilterActive ? '當前清單尚無已收藏的單字' : '此清單查無單字';
       container.appendChild(empty);
       return;
     }
@@ -1004,6 +1068,16 @@
 
       const main = document.createElement('div');
       main.className = 'word-item-main';
+
+      const starBtn = document.createElement('button');
+      starBtn.type = 'button';
+      starBtn.className = 'word-item-star-btn' + (w.starred ? ' active' : '');
+      starBtn.textContent = '★';
+      starBtn.title = '切換收藏';
+      starBtn.onclick = (e) => {
+        e.stopPropagation();
+        toggleStar(w.id);
+      };
 
       const info = document.createElement('div');
       info.className = 'word-item-info';
@@ -1040,6 +1114,7 @@
       ops.appendChild(editBtn);
       ops.appendChild(delBtn);
 
+      main.appendChild(starBtn);
       main.appendChild(info);
       main.appendChild(ops);
 
@@ -1057,7 +1132,7 @@
       editBox.innerHTML = `
         <label>原文<input type="text" class="inline-input-word" value="${w.word}"></label>
         <div class="status-text inline-status"></div>
-        <label>翻譯<input type="text" class="inline-input-trans" value="${w.trans}"></label>
+        <label>翻譯<input type="text" class="inline-input-trans" value="${w.trans || ''}"></label>
         <label>筆記<input type="text" class="inline-input-note" value="${w.note || ''}"></label>
         <div class="inline-actions">
           <button type="button" class="btn btn-secondary inline-cancel-btn">取消</button>
@@ -1127,6 +1202,12 @@
     $('btnNext').onclick = () => stepCard(1);
     $('transZone').onclick = toggleReveal;
 
+    // 主卡片收藏按鈕點擊
+    $('btnCardStar').onclick = (e) => {
+      e.stopPropagation();
+      if (currentWordId) toggleStar(currentWordId);
+    };
+
     // 清單面板控制
     $('btnOpenDecks').onclick = openDeckModal;
     $('btnCloseDecks').onclick = closeDeckModal;
@@ -1154,6 +1235,13 @@
     $('btnToggleManage').onclick = toggleManageMode;
     $('searchInput').oninput = renderList;
     $('listOverlay').onclick = (e) => { if (e.target === $('listOverlay')) closeListModal(); };
+
+    // 收藏過濾切換
+    $('btnFilterStarred').onclick = () => {
+      isStarredFilterActive = !isStarredFilterActive;
+      updateSortChips();
+      renderList();
+    };
 
     // 排序標籤
     document.querySelectorAll('.chip[data-sort]').forEach(chip => {
