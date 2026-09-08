@@ -23,7 +23,6 @@
     --primary-hover: #1D4ED8;
     --border: #E2E8F0;
     --danger: #EF4444;
-    --star-active: #F59E0B;
     --card-bg: #FFFFFF;
     --mask-bg: #EEF2F6;
     --radius: 16px;
@@ -78,7 +77,7 @@
     font-weight: 700;
     color: var(--text-main);
     cursor: pointer;
-    max-width: 220px;
+    max-width: 240px;
   }
   .deck-title-text {
     overflow: hidden;
@@ -118,9 +117,10 @@
     box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06);
     display: flex;
     flex-direction: column;
-    padding: 20px;
+    padding: 16px 20px 20px;
     touch-action: pan-y;
     user-select: none;
+    position: relative;
   }
   .card-meta {
     display: flex;
@@ -129,29 +129,27 @@
     font-size: 0.8rem;
     font-weight: 600;
     color: var(--text-muted);
-    padding-bottom: 12px;
+    padding-bottom: 10px;
     border-bottom: 1px solid var(--border);
   }
-  .meta-left {
+  .card-meta-left {
+    display: flex;
+    gap: 6px;
+  }
+  .card-quick-edit-btn {
+    border: none;
+    background: #EFF6FF;
+    color: var(--primary);
+    padding: 4px 10px;
+    border-radius: 14px;
+    font-size: 0.78rem;
+    font-weight: 600;
     display: flex;
     align-items: center;
     gap: 4px;
-  }
-  .star-btn-card {
-    background: transparent;
-    border: none;
-    font-size: 1.3rem;
-    color: var(--border);
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    line-height: 1;
-    padding: 2px 4px;
-    transition: color 0.15s ease, transform 0.1s ease;
   }
-  .star-btn-card:active { transform: scale(1.2); }
-  .star-btn-card.active { color: var(--star-active); }
+  .card-quick-edit-btn:active { background: #DBEAFE; }
 
   .word-zone {
     flex: 1.2;
@@ -218,12 +216,13 @@
     padding: 20px;
   }
 
-  /* ---------- 底部導覽 ---------- */
+  /* ---------- 底部導覽與右下角 FAB ---------- */
   .bottom-nav {
     height: 60px;
     display: flex;
     gap: 12px;
     align-items: center;
+    padding-right: 68px; /* 留出右下角按鈕空間 */
   }
   .nav-btn {
     flex: 1;
@@ -238,6 +237,31 @@
   }
   .nav-btn:active { opacity: 0.85; }
   .nav-btn[disabled] { opacity: 0.3; cursor: not-allowed; }
+
+  /* 右下角懸浮按鈕 (FAB) */
+  .fab-add-btn {
+    position: absolute;
+    right: 16px;
+    bottom: calc(env(safe-area-inset-bottom, 16px) + 4px);
+    width: 56px;
+    height: 56px;
+    border-radius: 28px;
+    background-color: var(--primary);
+    color: #FFFFFF;
+    border: none;
+    font-size: 1.8rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+    cursor: pointer;
+    z-index: 10;
+  }
+  .fab-add-btn:active {
+    background-color: var(--primary-hover);
+    transform: scale(0.95);
+  }
 
   /* ---------- 彈出面板 (Sheets) ---------- */
   .sheet-overlay {
@@ -355,7 +379,7 @@
   }
   .sheet-actions .btn { flex: 1; }
 
-  /* 排序與過濾標籤 */
+  /* 排序標籤 */
   .sort-bar {
     display: flex;
     gap: 6px;
@@ -378,11 +402,6 @@
     background: #EFF6FF;
     color: var(--primary);
   }
-  .chip-star.active {
-    border-color: var(--star-active);
-    background: #FFFBEB;
-    color: #D97706;
-  }
 
   /* 單字列表與行內展開編輯 */
   .word-list {
@@ -403,7 +422,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 10px;
+    gap: 12px;
     cursor: pointer;
   }
   .word-item-info { flex: 1; min-width: 0; }
@@ -423,17 +442,6 @@
     white-space: nowrap;
     margin-top: 2px;
   }
-  .word-item-star-btn {
-    background: transparent;
-    border: none;
-    font-size: 1.25rem;
-    color: var(--border);
-    cursor: pointer;
-    line-height: 1;
-    padding: 4px;
-  }
-  .word-item-star-btn.active { color: var(--star-active); }
-
   .word-item-ops {
     display: none;
     gap: 6px;
@@ -528,18 +536,18 @@
       <span class="deck-title-text" id="currentDeckTitle">請選擇清單</span>
       <span>▾</span>
     </button>
-    <button class="icon-btn" id="btnOpenAdd" aria-label="新增單字">＋</button>
+    <div style="width: 44px;"></div> <!-- 排版平衡佔位 -->
   </header>
 
   <!-- 卡片主區 -->
   <main class="stage">
     <div class="card" id="mainCard" style="display: none;">
       <div class="card-meta">
-        <div class="meta-left">
-          <button type="button" class="star-btn-card" id="btnCardStar" aria-label="收藏單字">★</button>
+        <div class="card-meta-left">
           <span id="metaIndex">No. 000</span>
+          <span id="metaTotal">/ 000</span>
         </div>
-        <span id="metaTotal">/ 000</span>
+        <button class="card-quick-edit-btn" id="btnCardQuickEdit" type="button">✎ 編輯</button>
       </div>
       <div class="word-zone">
         <div class="word-text" id="displayWord">—</div>
@@ -564,6 +572,9 @@
     <button class="nav-btn" id="btnPrev" disabled>← 上一個</button>
     <button class="nav-btn" id="btnNext" disabled>下一個 →</button>
   </footer>
+
+  <!-- 右下角大拇指熱區：新增單字懸浮按鈕 (FAB) -->
+  <button class="fab-add-btn" id="btnFabAdd" aria-label="新增單字">＋</button>
 </div>
 
 <!-- 清單選擇與管理彈窗 -->
@@ -586,33 +597,33 @@
   </div>
 </div>
 
-<!-- 新增單字彈窗 -->
-<div class="sheet-overlay" id="addWordOverlay">
+<!-- 新增/編輯單字彈窗 -->
+<div class="sheet-overlay" id="wordFormOverlay">
   <div class="sheet">
     <div class="sheet-handle"></div>
     <div class="sheet-header">
-      <div class="sheet-title" id="addWordSheetTitle">新增單字</div>
+      <div class="sheet-title" id="wordFormTitle">新增單字</div>
     </div>
     <div class="sheet-body">
       <label>原文單字 / 句子
-        <input type="text" id="inputNewWord" placeholder="輸入單字，系統將自動翻譯…">
+        <input type="text" id="inputFormWord" placeholder="輸入單字，系統將自動翻譯…">
       </label>
-      <div class="status-text" id="addWordStatus"></div>
+      <div class="status-text" id="wordFormStatus"></div>
       <label>中文翻譯
-        <input type="text" id="inputNewTrans" placeholder="自動翻譯結果（可手動修改）">
+        <input type="text" id="inputFormTrans" placeholder="自動翻譯結果（可手動修改）">
       </label>
       <label>補充筆記（選填）
-        <input type="text" id="inputNewNote" placeholder="例句、詞性、記憶筆記…">
+        <input type="text" id="inputFormNote" placeholder="例句、詞性、記憶筆記…">
       </label>
     </div>
     <div class="sheet-actions">
-      <button type="button" class="btn btn-secondary" id="btnCancelAddWord">取消</button>
-      <button type="button" class="btn btn-primary" id="btnSaveNewWord">儲存單字</button>
+      <button type="button" class="btn btn-secondary" id="btnCancelWordForm">取消</button>
+      <button type="button" class="btn btn-primary" id="btnSaveWordForm">儲存單字</button>
     </div>
   </div>
 </div>
 
-<!-- 單字列表管理 (含收藏過濾與行內編輯) -->
+<!-- 單字列表管理 (含行內無遮擋編輯) -->
 <div class="sheet-overlay" id="listOverlay">
   <div class="sheet">
     <div class="sheet-handle"></div>
@@ -623,7 +634,6 @@
     <div class="sheet-body">
       <input type="search" id="searchInput" placeholder="搜尋當前清單單字…">
       <div class="sort-bar">
-        <button type="button" class="chip chip-star" id="btnFilterStarred">★ 僅看收藏</button>
         <button type="button" class="chip" data-sort="time_desc">最新</button>
         <button type="button" class="chip" data-sort="time_asc">最舊</button>
         <button type="button" class="chip" data-sort="alpha">A-Z 字典序</button>
@@ -648,13 +658,13 @@
   let words = [];
   let activeDeckId = null;
   let sortMode = localStorage.getItem(SORT_KEY) || 'time_desc';
-  let isStarredFilterActive = false;
   let randomOrder = [];
   let currentWordId = null;
   let isRevealed = false;
   let isManageMode = false;
   let isDeckManageMode = false;
-  let editingWordId = null;
+  let editingWordIdInList = null;
+  let formEditingId = null; // 當前正在編輯的單字 ID (null 代表新增模式)
   let debounceTimer = null;
 
   const $ = (id) => document.getElementById(id);
@@ -667,10 +677,6 @@
     try {
       decks = JSON.parse(localStorage.getItem(STORAGE_DECKS)) || [];
       words = JSON.parse(localStorage.getItem(STORAGE_WORDS)) || [];
-      // 確保舊資料有 starred 屬性
-      words.forEach(w => {
-        if (typeof w.starred !== 'boolean') w.starred = false;
-      });
       activeDeckId = localStorage.getItem(STORAGE_ACTIVE_DECK) || (decks[0] ? decks[0].id : null);
     } catch (e) {
       decks = [];
@@ -684,16 +690,6 @@
     localStorage.setItem(STORAGE_WORDS, JSON.stringify(words));
     if (activeDeckId) localStorage.setItem(STORAGE_ACTIVE_DECK, activeDeckId);
     else localStorage.removeItem(STORAGE_ACTIVE_DECK);
-  }
-
-  /* ---------- 收藏切換核心函式 ---------- */
-  function toggleStar(wordId) {
-    const target = words.find(w => w.id === wordId);
-    if (!target) return;
-    target.starred = !target.starred;
-    saveData();
-    renderCard();
-    renderList();
   }
 
   /* ---------- 清單過濾與排序 ---------- */
@@ -740,7 +736,6 @@
     document.querySelectorAll('.chip[data-sort]').forEach(chip => {
       chip.classList.toggle('active', chip.dataset.sort === sortMode);
     });
-    $('btnFilterStarred').classList.toggle('active', isStarredFilterActive);
   }
 
   /* ---------- 主舞台刷卡渲染 ---------- */
@@ -771,7 +766,7 @@
     if (total === 0) {
       cardEl.style.display = 'none';
       emptyEl.style.display = 'block';
-      promptText.innerHTML = `「${currentDeck.name}」目前沒有單字<br>點右上角「＋」開始新增！`;
+      promptText.innerHTML = `「${currentDeck.name}」目前沒有單字<br>點右下角「＋」開始新增！`;
       createBtn.style.display = 'none';
       prevBtn.disabled = true;
       nextBtn.disabled = true;
@@ -795,9 +790,6 @@
     $('displayTrans').textContent = current.trans || '(無翻譯)';
     $('displayNote').textContent = current.note || '';
     $('displayNote').style.display = current.note ? 'block' : 'none';
-
-    // 更新主卡片星星狀態
-    $('btnCardStar').classList.toggle('active', !!current.starred);
 
     isRevealed = false;
     applyReveal();
@@ -826,19 +818,20 @@
     renderCard();
   }
 
-  /* ---------- 自動翻譯 API ---------- */
+  /* ---------- Google 官方翻譯端點 ---------- */
   async function autoTranslateWord(text, targetInputId, statusId) {
     const word = text.trim();
     if (!word) {
       $(statusId).textContent = '';
       return;
     }
-    $(statusId).textContent = '自動翻譯中…';
+    $(statusId).textContent = 'Google 翻譯中…';
     try {
-      const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(word)}&langpair=Autodetect|zh-TW`);
+      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=zh-TW&dt=t&q=${encodeURIComponent(word)}`;
+      const res = await fetch(url);
       const data = await res.json();
-      if (data && data.responseData && data.responseData.translatedText) {
-        $(targetInputId).value = data.responseData.translatedText;
+      if (data && data[0] && data[0][0] && data[0][0][0]) {
+        $(targetInputId).value = data[0][0][0];
         $(statusId).textContent = '已填入建議翻譯，可自由修改';
       } else {
         $(statusId).textContent = '無翻譯結果，請手動輸入';
@@ -955,63 +948,85 @@
     }
   }
 
-  /* ---------- 新增單字流程 ---------- */
-  function openAddWordModal() {
+  /* ---------- 單字彈窗表單 (支援新增與快速編輯) ---------- */
+  function openWordForm(targetId = null) {
     if (!activeDeckId) {
       handleCreateDeck();
       if (!activeDeckId) return;
     }
+    formEditingId = targetId;
     const currentDeck = decks.find(d => d.id === activeDeckId);
-    $('addWordSheetTitle').textContent = `新增單字至「${currentDeck.name}」`;
-    $('inputNewWord').value = '';
-    $('inputNewTrans').value = '';
-    $('inputNewNote').value = '';
-    $('addWordStatus').textContent = '';
-    $('addWordOverlay').classList.add('active');
+
+    if (formEditingId) {
+      const target = words.find(w => w.id === formEditingId);
+      if (!target) return;
+      $('wordFormTitle').textContent = `編輯單字`;
+      $('inputFormWord').value = target.word;
+      $('inputFormTrans').value = target.trans;
+      $('inputFormNote').value = target.note;
+      $('wordFormStatus').textContent = '';
+    } else {
+      $('wordFormTitle').textContent = `新增單字至「${currentDeck.name}」`;
+      $('inputFormWord').value = '';
+      $('inputFormTrans').value = '';
+      $('inputFormNote').value = '';
+      $('wordFormStatus').textContent = '';
+    }
+
+    $('wordFormOverlay').classList.add('active');
     setTimeout(() => {
-      $('inputNewWord').focus();
-      $('inputNewWord').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      $('inputFormWord').focus();
+      $('inputFormWord').scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 150);
   }
 
-  function closeAddWordModal() {
-    $('addWordOverlay').classList.remove('active');
+  function closeWordForm() {
+    $('wordFormOverlay').classList.remove('active');
+    formEditingId = null;
   }
 
-  function saveNewWord() {
-    const word = $('inputNewWord').value.trim();
-    const trans = $('inputNewTrans').value.trim();
-    const note = $('inputNewNote').value.trim();
+  function saveWordForm() {
+    const word = $('inputFormWord').value.trim();
+    const trans = $('inputFormTrans').value.trim();
+    const note = $('inputFormNote').value.trim();
 
     if (!word) {
-      $('addWordStatus').textContent = '請輸入原文單字';
+      $('wordFormStatus').textContent = '請輸入原文單字';
       return;
     }
 
-    const newWord = {
-      id: createId(),
-      deckId: activeDeckId,
-      word,
-      trans,
-      note,
-      starred: false,
-      createdAt: Date.now()
-    };
-    words.push(newWord);
-    if (sortMode === 'random') randomOrder.push(newWord.id);
-    currentWordId = newWord.id;
+    if (formEditingId) {
+      const target = words.find(w => w.id === formEditingId);
+      if (target) {
+        target.word = word;
+        target.trans = trans;
+        target.note = note;
+      }
+    } else {
+      const newWord = {
+        id: createId(),
+        deckId: activeDeckId,
+        word,
+        trans,
+        note,
+        createdAt: Date.now()
+      };
+      words.push(newWord);
+      if (sortMode === 'random') randomOrder.push(newWord.id);
+      currentWordId = newWord.id;
+    }
 
     saveData();
-    closeAddWordModal();
+    closeWordForm();
     renderCard();
     renderList();
   }
 
-  /* ---------- 單字清單與行內無遮擋編輯 ---------- */
+  /* ---------- 單字清單與行內編輯 ---------- */
   function openListModal() {
     if (!activeDeckId) return;
     isManageMode = false;
-    editingWordId = null;
+    editingWordIdInList = null;
     updateManageBtnText();
     const currentDeck = decks.find(d => d.id === activeDeckId);
     $('listSheetTitle').textContent = `${currentDeck ? currentDeck.name : ''} 單字`;
@@ -1023,12 +1038,12 @@
 
   function closeListModal() {
     $('listOverlay').classList.remove('active');
-    editingWordId = null;
+    editingWordIdInList = null;
   }
 
   function toggleManageMode() {
     isManageMode = !isManageMode;
-    editingWordId = null;
+    editingWordIdInList = null;
     updateManageBtnText();
     renderList();
   }
@@ -1040,7 +1055,6 @@
   function renderList() {
     const query = $('searchInput').value.trim().toLowerCase();
     const list = getSortedActiveWords().filter(w => {
-      if (isStarredFilterActive && !w.starred) return false;
       if (!query) return true;
       return w.word.toLowerCase().includes(query) ||
              (w.trans && w.trans.toLowerCase().includes(query)) ||
@@ -1057,27 +1071,17 @@
       empty.style.color = 'var(--text-muted)';
       empty.style.fontSize = '0.85rem';
       empty.style.padding = '20px 0';
-      empty.textContent = isStarredFilterActive ? '當前清單尚無已收藏的單字' : '此清單查無單字';
+      empty.textContent = '此清單查無單字';
       container.appendChild(empty);
       return;
     }
 
     list.forEach(w => {
       const item = document.createElement('div');
-      item.className = 'word-item' + (editingWordId === w.id ? ' editing' : '');
+      item.className = 'word-item' + (editingWordIdInList === w.id ? ' editing' : '');
 
       const main = document.createElement('div');
       main.className = 'word-item-main';
-
-      const starBtn = document.createElement('button');
-      starBtn.type = 'button';
-      starBtn.className = 'word-item-star-btn' + (w.starred ? ' active' : '');
-      starBtn.textContent = '★';
-      starBtn.title = '切換收藏';
-      starBtn.onclick = (e) => {
-        e.stopPropagation();
-        toggleStar(w.id);
-      };
 
       const info = document.createElement('div');
       info.className = 'word-item-info';
@@ -1088,11 +1092,11 @@
 
       const editBtn = document.createElement('button');
       editBtn.className = 'btn-sm';
-      editBtn.textContent = editingWordId === w.id ? '收合' : '編輯';
+      editBtn.textContent = editingWordIdInList === w.id ? '收合' : '編輯';
       editBtn.type = 'button';
       editBtn.onclick = (e) => {
         e.stopPropagation();
-        editingWordId = (editingWordId === w.id) ? null : w.id;
+        editingWordIdInList = (editingWordIdInList === w.id) ? null : w.id;
         renderList();
       };
 
@@ -1114,7 +1118,6 @@
       ops.appendChild(editBtn);
       ops.appendChild(delBtn);
 
-      main.appendChild(starBtn);
       main.appendChild(info);
       main.appendChild(ops);
 
@@ -1126,13 +1129,13 @@
         }
       };
 
-      // 行內展開編輯區塊
+      // 行內展開編輯
       const editBox = document.createElement('div');
       editBox.className = 'inline-edit-box';
       editBox.innerHTML = `
         <label>原文<input type="text" class="inline-input-word" value="${w.word}"></label>
         <div class="status-text inline-status"></div>
-        <label>翻譯<input type="text" class="inline-input-trans" value="${w.trans || ''}"></label>
+        <label>翻譯<input type="text" class="inline-input-trans" value="${w.trans}"></label>
         <label>筆記<input type="text" class="inline-input-note" value="${w.note || ''}"></label>
         <div class="inline-actions">
           <button type="button" class="btn btn-secondary inline-cancel-btn">取消</button>
@@ -1146,7 +1149,7 @@
       const inStatus = editBox.querySelector('.inline-status');
 
       editBox.querySelector('.inline-cancel-btn').onclick = () => {
-        editingWordId = null;
+        editingWordIdInList = null;
         renderList();
       };
 
@@ -1160,7 +1163,7 @@
         w.trans = inTrans.value.trim();
         w.note = inNote.value.trim();
         saveData();
-        editingWordId = null;
+        editingWordIdInList = null;
         renderList();
         renderCard();
       };
@@ -1202,10 +1205,10 @@
     $('btnNext').onclick = () => stepCard(1);
     $('transZone').onclick = toggleReveal;
 
-    // 主卡片收藏按鈕點擊
-    $('btnCardStar').onclick = (e) => {
+    // 主卡片快速編輯按鈕
+    $('btnCardQuickEdit').onclick = (e) => {
       e.stopPropagation();
-      if (currentWordId) toggleStar(currentWordId);
+      if (currentWordId) openWordForm(currentWordId);
     };
 
     // 清單面板控制
@@ -1216,16 +1219,17 @@
     $('btnToggleDeckManage').onclick = toggleDeckManageMode;
     $('deckOverlay').onclick = (e) => { if (e.target === $('deckOverlay')) closeDeckModal(); };
 
-    // 新增單字
-    $('btnOpenAdd').onclick = openAddWordModal;
-    $('btnCancelAddWord').onclick = closeAddWordModal;
-    $('btnSaveNewWord').onclick = saveNewWord;
-    $('addWordOverlay').onclick = (e) => { if (e.target === $('addWordOverlay')) closeAddWordModal(); };
-    $('inputNewWord').oninput = () => {
+    // 右下角懸浮按鈕：新增單字
+    $('btnFabAdd').onclick = () => openWordForm(null);
+    $('btnCancelWordForm').onclick = closeWordForm;
+    $('btnSaveWordForm').onclick = saveWordForm;
+    $('wordFormOverlay').onclick = (e) => { if (e.target === $('wordFormOverlay')) closeWordForm(); };
+    $('inputFormWord').oninput = () => {
+      if (formEditingId) return; // 編輯舊單字時不自動覆蓋翻譯
       clearTimeout(debounceTimer);
-      $('addWordStatus').textContent = '輸入中…';
+      $('wordFormStatus').textContent = '輸入中…';
       debounceTimer = setTimeout(() => {
-        autoTranslateWord($('inputNewWord').value, 'inputNewTrans', 'addWordStatus');
+        autoTranslateWord($('inputFormWord').value, 'inputFormTrans', 'wordFormStatus');
       }, 500);
     };
 
@@ -1235,13 +1239,6 @@
     $('btnToggleManage').onclick = toggleManageMode;
     $('searchInput').oninput = renderList;
     $('listOverlay').onclick = (e) => { if (e.target === $('listOverlay')) closeListModal(); };
-
-    // 收藏過濾切換
-    $('btnFilterStarred').onclick = () => {
-      isStarredFilterActive = !isStarredFilterActive;
-      updateSortChips();
-      renderList();
-    };
 
     // 排序標籤
     document.querySelectorAll('.chip[data-sort]').forEach(chip => {
