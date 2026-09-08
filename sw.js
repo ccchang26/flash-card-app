@@ -1,5 +1,5 @@
 // 快取版本名稱（若有修改前端檔案，可將 v3 改為 v4 強制手機更新）
-const CACHE_NAME = 'flashcards-cache-v3';
+const CACHE_NAME = 'flashcards-cache-v4';
 
 // 離線需要快取的靜態資源清單
 const ASSETS_TO_CACHE = [
